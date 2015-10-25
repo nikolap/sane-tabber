@@ -1,0 +1,8 @@
+td > div{
+    text-align: center;
+    vertical-align: middle;
+}
+
+.table-fixed {
+    table-layout: fixed;
+}

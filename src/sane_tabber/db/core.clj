@@ -1,0 +1,118 @@
+(ns sane-tabber.db.core
+  (:require [monger.core :as mg]
+            [monger.collection :as mc]
+            [monger.operators :refer :all]
+            [monger.conversion :as conversion]
+            [environ.core :refer [env]]
+            [buddy.hashers :as hashers]
+            [buddy.core.hash :refer [sha256]]
+            [buddy.core.codecs :refer [bytes->hex]]
+            [buddy.core.nonce :refer [random-nonce]])
+  (:import (org.bson.types ObjectId)))
+
+(defonce db (atom nil))
+
+(defn connect! []
+  ;; Tries to get the Mongo URI from the environment variable
+  (reset! db (-> (:database-url env) mg/connect-via-uri :db)))
+
+(defn disconnect! []
+  (when-let [conn @db]
+    (mg/disconnect conn)
+    (reset! db nil)))
+
+(defn from-dbo [dbo]
+  (conversion/from-db-object dbo true))
+
+(def insert-return (comp from-dbo mc/insert-and-return))
+
+(defn object-id
+  ([]
+   (ObjectId.))
+  ([id]
+   (when id
+     (if (instance? ObjectId id)
+       id
+       (ObjectId. ^String id)))))
+
+(defn oid-conv [item]
+  (if (coll? item) (mapv object-id item) (object-id item)))
+
+(defn object-idify [m ks]
+  (reduce #(update-in %1 [%2] oid-conv) m ks))
+
+(defn create-user [user]
+  (insert-return @db "users" (assoc user :password (hashers/encrypt (:password user)))))
+
+(defn update-user [id password]
+  (mc/update-by-id @db "users" (object-id id) {$set {:password (hashers/encrypt password)}}))
+
+(defn get-user [username]
+  (mc/find-one-as-map @db "users" {:username username}))
+
+(defn get-user-by-email [email]
+  (mc/find-one-as-map @db "users" {:email email}))
+
+(defn create-reset [{:keys [_id]}]
+  (insert-return @db "resets" {:user-id _id
+                               :token   (-> _id (str (bytes->hex (random-nonce 12))) sha256 bytes->hex)}))
+
+(defn get-reset [token]
+  (mc/find-one-as-map @db "resets" {:token token}))
+
+(defn delete-reset [token]
+  (mc/remove @db "resets" {:token token}))
+
+(defn create-tournament [owner name team-count speak-count]
+  (insert-return @db "tournaments" {:owner-id    (object-id owner)
+                                    :name        name
+                                    :team-count  team-count
+                                    :speak-count speak-count
+                                    :editors     []}))
+
+(defn delete-tournament [tournament-id]
+  (let [tid (object-id tournament-id)]
+    (mc/remove @db "rooms" {:tournament-id tid})
+    (mc/remove @db "schools" {:tournament-id tid})
+    (mc/remove @db "judges" {:tournament-id tid})
+    (mc/remove @db "teams" {:tournament-id tid})
+    (mc/remove @db "speakers" {:tournament-id tid})
+    (mc/remove-by-id @db "tournaments" tid)))
+
+(defn batch-create-rooms [data]
+  (mc/insert-batch @db "rooms" data))
+
+(defn batch-create-schools [data]
+  (mc/insert-batch @db "schools" data))
+
+(defn batch-create-judges [data]
+  (mc/insert-batch @db "judges" data))
+
+(defn batch-create-teams [data]
+  (mc/insert-batch @db "teams" data))
+
+(defn batch-create-speakers [data]
+  (mc/insert-batch @db "speakers" data))
+
+(defn get-schools [tournament-id]
+  (mc/find-maps @db "schools" {:tournament-id (object-id tournament-id)}))
+
+(defn get-teams [tournament-id]
+  (mc/find-maps @db "teams" {:tournament-id (object-id tournament-id)}))
+
+(defn get-tournaments
+  ([]
+   (mc/find-maps @db "tournaments" {}))
+  ([user-id]
+   (mc/find-maps @db "tournaments" {$or [{:owner-id (object-id user-id)}
+                                         {:editors {$in [(object-id user-id)]}}]})))
+
+(defn get-rooms [tournament-id]
+  (mc/find-maps @db "rooms" {:tournament-id (object-id tournament-id)}))
+
+(defn update-room [room]
+  (let [room (object-idify room [:_id :tournament-id])]
+    (mc/update-by-id @db "rooms" (:_id room) {$set room})))
+
+(defn create-room [room]
+  (insert-return @db "rooms" (object-idify room [:tournament-id])))

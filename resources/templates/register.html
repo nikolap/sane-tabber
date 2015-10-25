@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>SaneTabber | Create an account</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    {% style "/assets/bootstrap/css/bootstrap.min.css" %}
+    {% style "/assets/bootstrap/css/bootstrap-theme.min.css" %}
+    {% style "/css/AdminLTE.min.css" %}
+    {% style "/css/skin-red.min.css" %}
+    {% style "/css/screen.css" %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+    <div class="login-logo">
+        <a href="#"><b>Sane</b>Tabber</a>
+    </div>
+    <!-- /.login-logo -->
+    <div class="login-box-body">
+        <p class="login-box-msg">Create a SaneTabber account</p>
+        {% if errors %}
+        <div class="callout callout-danger">
+            {% for error in errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <form action="register" method="post">
+            {% csrf-field %}
+            <div class="form-group has-feedback">
+                <input type="text" class="form-control" placeholder="Username" id="username" name="username">
+                <span class="glyphicon glyphicon-user form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback">
+                <input type="email" class="form-control" placeholder="Email" id="email" name="email">
+                <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback">
+                <input type="password" class="form-control" placeholder="Password" id="password" name="password">
+                <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback">
+                <input type="password" class="form-control" placeholder="Retype password" id="verify-password" name="verify-password">
+                <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+            </div>
+            <div class="row">
+                <div class="col-xs-8">
+                    <label>
+                        By registering I agree to the <a href="legal">terms of service</a>
+                    </label>
+                </div>
+                <div class="col-xs-4">
+                    <button type="submit" class="btn btn-primary btn-block btn-flat">Register</button>
+                </div>
+            </div>
+        </form>
+
+        <a href="/login">Back</a><br>
+
+    </div>
+</div>
+{% script "/assets/jquery/jquery.min.js" %}
+{% script "/assets/bootstrap/js/bootstrap.min.js" %}
+{% script "/js/admin-app.min.js" %}
+</body>
+</html>

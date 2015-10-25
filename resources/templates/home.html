@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SaneTabber</title>
+    {% style "/assets/bootstrap/css/bootstrap.min.css" %}
+    {% style "/assets/bootstrap/css/bootstrap-theme.min.css" %}
+    {% style "/css/AdminLTE.min.css" %}
+    {% style "/css/skin-red.min.css" %}
+    {% style "/css/screen.css" %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+</head>
+<body class="hold-transition skin-red sidebar-mini">
+{% csrf-field %}
+<div class="wrapper">
+    <header class="main-header">
+        <a href="#" class="logo">
+            <span class="logo-mini"><b>S</b>T</span>
+            <span class="logo-lg"><b>Sane</b>Tabber</span>
+        </a>
+
+        <nav class="navbar navbar-static-top" role="navigation">
+            <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                <span class="sr-only">Toggle navigation</span>
+            </a>
+
+            <div class="navbar-custom-menu">
+                <ul class="nav navbar-nav">
+                    {% if identity %}
+                    <li><a href="/account">Account Settings</a></li>
+                    <li><a href="/logout">Logout</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <aside class="main-sidebar">
+        <section class="sidebar" id="sidebar">
+        </section>
+    </aside>
+    <div class="content-wrapper">
+        <div id="app">
+            <section class="content-header">
+                <h1 id="header">
+                    Loading...
+                </h1>
+                <ol class="breadcrumb" id="breadcrumb">
+                </ol>
+            </section>
+            <section class="content">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="box box-default">
+                            <div class="box-header"></div>
+                            <div class="box-body"></div>
+                            <div class="overlay">
+                                <i class="fa fa-refresh fa-spin"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <footer class="main-footer">
+        <!-- To the right -->
+        <div class="pull-right hidden-xs">
+            SaneTabber is released under the <a href="http://opensource.org/licenses/MIT">MIT License</a>.
+            <a href="/legal">Legal stuff</a>
+        </div>
+        <!-- Default to the left -->
+        Copyright &copy; Nikola Peric.
+        Contribute to development at <a href="https://github.com/nikolap/sane-tabber">GitHub</a>
+    </footer>
+</div>
+
+
+<script type="text/javascript">
+        var context = "{{servlet-context}}";
+
+
+</script>
+{% script "/assets/jquery/jquery.min.js" %}
+{% script "/assets/bootstrap/js/bootstrap.min.js" %}
+{% script "/js/admin-app.min.js" %}
+{% if dev %}
+{% script "/js/out/goog/base.js" %}
+{% script "/js/app.js" %}
+<script type="text/javascript">goog.require("sane_tabber.app");</script>
+{% else %}
+{% script "/js/app.js" %}
+{% endif %}
+</body>
+</html>
+
+
+
+
