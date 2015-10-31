@@ -5,16 +5,18 @@
             [goog.history.EventType :as EventType]
             [ajax.core :refer [GET POST]]
             [sane-tabber.routes :refer [page]]
+            [sane-tabber.websockets :as ws]
             [sane-tabber.views.navigation :refer [sidebar]])
   (:import goog.History))
 
 (defn hook-browser-navigation! []
   (doto (History.)
-        (events/listen
-          EventType/NAVIGATE
-          (fn [event]
-              (secretary/dispatch! (.-token event))))
-        (.setEnabled true)))
+    (events/listen
+      EventType/NAVIGATE
+      (fn [event]
+        (ws/reset-channels!)
+        (secretary/dispatch! (.-token event))))
+    (.setEnabled true)))
 
 (defn mount-components []
   (reagent/render [#'sidebar] (.getElementById js/document "sidebar"))

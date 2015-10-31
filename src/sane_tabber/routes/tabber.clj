@@ -19,15 +19,21 @@
     (db/batch-create-rooms data)))
 
 (defn upload-schools [tournament-id schools-file]
-  (let [data (->> schools-file read-csv-file (map #(into {} {:name          (first %)
-                                                             :code          (second %)
-                                                             :tournament-id tournament-id})))]
+  (let [data (->> schools-file
+                  read-csv-file
+                  (map #(into {}
+                              {:name          (first %)
+                               :code          (second %)
+                               :tournament-id tournament-id})))]
     (db/batch-create-schools data)))
 
 (defn upload-judges [tournament-id judges-file]
-  (let [data (->> judges-file read-csv-file (map #(into {} {:name          (first %)
-                                                            :rating        (second %)
-                                                            :tournament-id tournament-id})))]
+  (let [data (->> judges-file
+                  read-csv-file
+                  (map #(into {}
+                              {:name          (first %)
+                               :rating        (second %)
+                               :tournament-id tournament-id})))]
     (db/batch-create-judges data)))
 
 (defn school-id-by-code [schools code]
@@ -39,18 +45,20 @@
 (defn upload-teams [tournament-id teams-file]
   (let [schools (db/get-schools tournament-id)
         raw-data (read-csv-file teams-file)
-        teams-data (map #(into {} {:team-code     (first %)
-                                   :school-id     (school-id-by-code schools (second %))
-                                   :tournament-id tournament-id}) raw-data)]
+        teams-data (map #(into {}
+                               {:team-code     (first %)
+                                :school-id     (school-id-by-code schools (second %))
+                                :tournament-id tournament-id}) raw-data)]
     (db/batch-create-teams teams-data)
     (let [teams (db/get-teams tournament-id)
           speaker-data (mapcat
                          (fn [row]
-                           (mapv #(into {} {:name          %
-                                            :team-id       (team-id-by-name teams
-                                                                            (first row)
-                                                                            (school-id-by-code schools (second row)))
-                                            :tournament-id tournament-id})
+                           (mapv #(into {}
+                                        {:name          %
+                                         :team-id       (team-id-by-name teams
+                                                                         (first row)
+                                                                         (school-id-by-code schools (second row)))
+                                         :tournament-id tournament-id})
                                  (drop 2 row))) raw-data)]
       (db/batch-create-speakers speaker-data))))
 
@@ -72,8 +80,22 @@
         [:_id :owner-id :editors]))))
 
 (defn get-rooms [tid]
-  (println tid)
   (pr-str (stringify-map (db/get-rooms tid) [:_id :tournament-id])))
+
+(defn get-teams [tid]
+  (pr-str (stringify-map (db/get-teams tid) [:_id :tournament-id :school-id])))
+
+(defn get-speakers [tid]
+  (pr-str (stringify-map (db/get-speakers tid) [:_id :tournament-id :team-id])))
+
+(defn get-teams-with-speakers [tid]
+  )
+
+(defn get-judges [tid]
+  (pr-str (stringify-map (db/get-judges tid) [:_id :tournament-id])))
+
+(defn get-scratches [tid]
+  (pr-str (stringify-map (db/get-scratches tid) [:_id :tournament-id :team-id :judge-id])))
 
 (defn delete-tournament [id]
   (db/delete-tournament id)
@@ -86,5 +108,10 @@
            (POST "/ajax/tournaments" {:keys [session params]} (create-tournament (:identity session) params))
            (context "/ajax/tournaments/:tid" [tid]
              (GET "/rooms" [] (get-rooms tid))
+             (GET "/teams" [] (get-teams tid))
+             (GET "/teams-speakers" [] (get-teams-with-speakers tid))
+             (GET "/speakers" [] (get-speakers tid))
+             (GET "/judges" [] (get-judges tid))
+             (GET "/scratches" [] (get-scratches tid))
              (POST "/delete" [] (delete-tournament tid))))
 

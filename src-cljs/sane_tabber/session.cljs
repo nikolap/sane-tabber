@@ -1,5 +1,6 @@
 (ns sane-tabber.session
   (:require [reagent.core :refer [atom]]
+            [cljs.reader :refer [read-string]]
             [sane-tabber.utils :refer [remove-when filter-first]]))
 
 (defonce app-state (atom {}))
@@ -8,7 +9,7 @@
   (swap! app-state assoc k v))
 
 (defn assoc-resp [resp keyword]
-  (insert! keyword (cljs.reader/read-string resp)))
+  (insert! keyword (read-string resp)))
 
 (defn update! [k f & args]
   (apply swap! app-state update-in (if (= "clojure.lang.PersistentVector" (type k))

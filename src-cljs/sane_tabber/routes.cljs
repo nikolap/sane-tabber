@@ -8,7 +8,8 @@
             [sane-tabber.views.home :refer [home-page]]
             [sane-tabber.views.new-tournament :refer [new-tournament-page]]
             [sane-tabber.views.dashboard :refer [dashboard-page]]
-            [sane-tabber.views.editors.rooms :refer [rooms-editor-page]]))
+            [sane-tabber.views.editors.rooms :refer [rooms-editor-page]]
+            [sane-tabber.views.editors.judges :refer [judges-editor-page]]))
 
 (secretary/set-config! :prefix "#")
 
@@ -16,7 +17,8 @@
   {:home           #'home-page
    :new-tournament #'new-tournament-page
    :dashboard      #'dashboard-page
-   :room-editor    #'rooms-editor-page})
+   :room-editor    #'rooms-editor-page
+   :judge-editor   #'judges-editor-page})
 
 (defn page []
   [(pages (session/get :page))])
@@ -36,3 +38,12 @@
                          {:handler #(assoc-resp % :rooms)})
                     (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/rooms") update-rooms!)
                     (session/put! :page :room-editor))
+(secretary/defroute "/:tid/editor/judges" [tid]
+                    (session/put! :tid tid)
+                    (GET (str "/ajax/tournaments/" tid "/judges")
+                         {:handler #(assoc-resp % :judges)})
+                    (GET (str "/ajax/tournaments/" tid "/teams")
+                         {:handler #(assoc-resp % :teams)})
+                    (GET (str "/ajax/tournaments/" tid "/scratches")
+                         {:handler #(assoc-resp % :scratches)})
+                    (session/put! :page :judge-editor))

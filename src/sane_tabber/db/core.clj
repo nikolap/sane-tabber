@@ -21,6 +21,8 @@
     (mg/disconnect conn)
     (reset! db nil)))
 
+;; UTILS
+
 (defn from-dbo [dbo]
   (conversion/from-db-object dbo true))
 
@@ -40,6 +42,14 @@
 
 (defn object-idify [m ks]
   (reduce #(update-in %1 [%2] oid-conv) m ks))
+
+(defn get-by-tid [coll tid]
+  (mc/find-maps @db coll {:tournament-id (object-id tid)}))
+
+(defn batch-insert [coll data]
+  (mc/insert-batch @db coll data))
+
+;; SECURITY
 
 (defn create-user [user]
   (insert-return @db "users" (assoc user :password (hashers/encrypt (:password user)))))
@@ -63,6 +73,8 @@
 (defn delete-reset [token]
   (mc/remove @db "resets" {:token token}))
 
+;; TABBER
+
 (defn create-tournament [owner name team-count speak-count]
   (insert-return @db "tournaments" {:owner-id    (object-id owner)
                                     :name        name
@@ -80,25 +92,34 @@
     (mc/remove-by-id @db "tournaments" tid)))
 
 (defn batch-create-rooms [data]
-  (mc/insert-batch @db "rooms" data))
+  (batch-insert "rooms" data))
 
 (defn batch-create-schools [data]
-  (mc/insert-batch @db "schools" data))
+  (batch-insert "rooms" data))
 
 (defn batch-create-judges [data]
-  (mc/insert-batch @db "judges" data))
+  (batch-insert "rooms" data))
 
 (defn batch-create-teams [data]
-  (mc/insert-batch @db "teams" data))
+  (batch-insert "rooms" data))
 
 (defn batch-create-speakers [data]
-  (mc/insert-batch @db "speakers" data))
+  (batch-insert "rooms" data))
 
-(defn get-schools [tournament-id]
-  (mc/find-maps @db "schools" {:tournament-id (object-id tournament-id)}))
+(defn get-schools [tid]
+  (get-by-tid "schools" tid))
 
-(defn get-teams [tournament-id]
-  (mc/find-maps @db "teams" {:tournament-id (object-id tournament-id)}))
+(defn get-teams [tid]
+  (get-by-tid "teams" tid))
+
+(defn get-speakers [tid]
+  (get-by-tid "speakers" tid))
+
+(defn get-judges [tid]
+  (get-by-tid "judges" tid))
+
+(defn get-scratches [tid]
+  (get-by-tid "scratches" tid))
 
 (defn get-tournaments
   ([]
