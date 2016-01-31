@@ -118,6 +118,23 @@
 (defn get-judges [tid]
   (get-by-tid "judges" tid))
 
+(defn update-judge [judge]
+  (let [judge (object-idify judge [:_id :tournament-id])]
+    (mc/update-by-id @db "judges" (:_id judge) {$set judge})))
+
+(defn create-judge [judge]
+  (insert-return @db "judges" (object-idify judge [:tournament-id])))
+
+(defn update-scratch [scratch]
+  (let [scratch (object-idify scratch [:_id :tournament-id :team-id :judge-id])]
+    (mc/update-by-id @db "scratches" (:_id scratch) {$set scratch})))
+
+(defn create-scratch [scratch]
+  (insert-return @db "scratches" (object-idify scratch [:tournament-id :team-id :judge-id])))
+
+(defn delete-scratch [scratch]
+  (mc/remove-by-id @db "scratches" (object-id (:_id scratch))))
+
 (defn get-scratches [tid]
   (get-by-tid "scratches" tid))
 
@@ -131,9 +148,23 @@
 (defn get-rooms [tournament-id]
   (mc/find-maps @db "rooms" {:tournament-id (object-id tournament-id)}))
 
+(defn create-room [room]
+  (insert-return @db "rooms" (object-idify room [:tournament-id])))
+
 (defn update-room [room]
   (let [room (object-idify room [:_id :tournament-id])]
     (mc/update-by-id @db "rooms" (:_id room) {$set room})))
 
-(defn create-room [room]
-  (insert-return @db "rooms" (object-idify room [:tournament-id])))
+(defn create-team [team]
+  (insert-return @db "teams" (:_id team) {$set team}))
+
+(defn update-team [team]
+  (let [team (object-idify team [:_id :tournament-id :school-id])]
+    (mc/update-by-id @db "teams" (:_id team) {$set team})))
+
+(defn create-speaker [speaker]
+  (insert-return @db "speakers" (:_id speaker) {$set speaker}))
+
+(defn update-speaker [speaker]
+  (let [speaker (object-idify speaker [:_id :tournament-id :team-id])]
+    (mc/update-by-id @db "speakers" (:_id speaker) {$set speaker})))

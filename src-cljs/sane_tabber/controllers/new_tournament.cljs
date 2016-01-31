@@ -20,7 +20,6 @@
          :error-handler error-handler}))
 
 (defn validate-form []
-  (println (.get (js/FormData. (sel1 :#new-tournament-form)) "name"))
   (let [data {:name         (id-value :#name)
               :rooms-file   (id-value :#rooms-file)
               :schools-file (id-value :#schools-file)

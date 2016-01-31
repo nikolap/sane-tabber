@@ -12,7 +12,8 @@
    (when error
      [:div.callout.callout-danger
       (first error)])
-   [:label {:for id} label]
+   (when label
+     [:label {:for id} label])
    item])
 
 (defn input-form-element [id form-type label fc? & [params error]]
@@ -29,6 +30,13 @@
     (for [opt option-list]
       ^{:key opt}
       [:option opt])]])
+
+(defn select-custom-form-element [id label option-list vkey & [opt-vkey params]]
+  [form-element id label
+   [:select.form-control (merge {:id id :name id} params)
+    (for [opt option-list]
+      ^{:key opt}
+      [:option {:value (if opt-vkey (opt-vkey opt) opt)} (vkey opt)])]])
 
 (defn checkbox [& [params]]
   [:div.checkbox>label>input (merge {:type "checkbox"} params)])

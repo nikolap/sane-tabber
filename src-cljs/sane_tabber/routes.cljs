@@ -2,14 +2,18 @@
   (:require [reagent.session :as session]
             [secretary.core :as secretary :include-macros true]
             [ajax.core :refer [GET]]
-            [sane-tabber.session :refer [app-state assoc-resp]]
+            [sane-tabber.session :refer [app-state]]
             [sane-tabber.websockets :as ws]
+            [sane-tabber.controllers.generic :refer [basic-get]]
             [sane-tabber.controllers.editors.rooms :refer [update-rooms!]]
+            [sane-tabber.controllers.editors.judges :refer [update-judges! update-scratches!]]
+            [sane-tabber.controllers.editors.teams :refer [update-teams! update-speakers!]]
             [sane-tabber.views.home :refer [home-page]]
             [sane-tabber.views.new-tournament :refer [new-tournament-page]]
             [sane-tabber.views.dashboard :refer [dashboard-page]]
             [sane-tabber.views.editors.rooms :refer [rooms-editor-page]]
-            [sane-tabber.views.editors.judges :refer [judges-editor-page]]))
+            [sane-tabber.views.editors.judges :refer [judges-editor-page]]
+            [sane-tabber.views.editors.teams :refer [teams-editor-page]]))
 
 (secretary/set-config! :prefix "#")
 
@@ -18,14 +22,14 @@
    :new-tournament #'new-tournament-page
    :dashboard      #'dashboard-page
    :room-editor    #'rooms-editor-page
-   :judge-editor   #'judges-editor-page})
+   :judge-editor   #'judges-editor-page
+   :team-editor    #'teams-editor-page})
 
 (defn page []
   [(pages (session/get :page))])
 
 (secretary/defroute "/" []
-                    (GET "/ajax/tournaments"
-                         {:handler #(assoc-resp % :tournaments)})
+                    (basic-get "ajax/tournaments" :tournaments)
                     (session/put! :page :home))
 (secretary/defroute "/new" []
                     (session/put! :page :new-tournament))
@@ -34,16 +38,23 @@
                     (session/put! :page :dashboard))
 (secretary/defroute "/:tid/editor/rooms" [tid]
                     (session/put! :tid tid)
-                    (GET (str "/ajax/tournaments/" tid "/rooms")
-                         {:handler #(assoc-resp % :rooms)})
+                    (basic-get (str "/ajax/tournaments/" tid "/rooms") :rooms)
                     (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/rooms") update-rooms!)
                     (session/put! :page :room-editor))
 (secretary/defroute "/:tid/editor/judges" [tid]
                     (session/put! :tid tid)
-                    (GET (str "/ajax/tournaments/" tid "/judges")
-                         {:handler #(assoc-resp % :judges)})
-                    (GET (str "/ajax/tournaments/" tid "/teams")
-                         {:handler #(assoc-resp % :teams)})
-                    (GET (str "/ajax/tournaments/" tid "/scratches")
-                         {:handler #(assoc-resp % :scratches)})
+                    (basic-get (str "/ajax/tournaments/" tid "/judges") :judges)
+                    (basic-get (str "/ajax/tournaments/" tid "/teams") :teams)
+                    (basic-get (str "/ajax/tournaments/" tid "/scratches") :scratches)
+                    (basic-get (str "/ajax/tournaments/" tid "/schools") :schools)
+                    (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/judges") update-judges!)
+                    (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/scratches") update-scratches! :scratches)
                     (session/put! :page :judge-editor))
+(secretary/defroute "/:tid/editor/teams" [tid]
+                    (session/put! :tid tid)
+                    (basic-get (str "/ajax/tournaments/" tid "/teams") :teams)
+                    (basic-get (str "/ajax/tournaments/" tid "/schools") :schools)
+                    (basic-get (str "/ajax/tournaments/" tid "/speakers") :speakers)
+                    (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/teams") update-teams! :teams)
+                    (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/speakers") update-speakers! :speakers)
+                    (session/put! :page :team-editor))

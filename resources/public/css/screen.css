@@ -6,3 +6,8 @@ td > div{
 .table-fixed {
     table-layout: fixed;
 }
+
+.form-success {
+    border-color:#00a65a;
+    box-shadow:none
+}

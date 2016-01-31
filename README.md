@@ -16,4 +16,4 @@ To start a web server for the application, run:
 
 ## License
 
-Copyright © 2015 Nikola Peric
+Copyright © 2015-2016 Nikola Peric

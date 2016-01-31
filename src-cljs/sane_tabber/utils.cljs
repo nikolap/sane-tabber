@@ -5,6 +5,10 @@
   (when-let [elem (sel1 id)]
     (dom/value elem)))
 
+(defn id-checked [id]
+  (when-let [elem (sel1 id)]
+    (.-checked elem)))
+
 (defn index-of [coll v]
   (let [i (count (take-while #(not= v %) coll))]
     (when (or (< i (count coll))
@@ -18,3 +22,6 @@
 
 (defn dispatch! [uri]
   (set! (.-href js/location) uri))
+
+(defn event-value [e]
+  (-> e .-target .-value))

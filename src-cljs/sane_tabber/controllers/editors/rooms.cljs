@@ -1,6 +1,5 @@
 (ns sane-tabber.controllers.editors.rooms
-  (:require [dommy.core :as dom :refer-macros [sel1]]
-            [sane-tabber.session :refer [app-state add-or-update!]]
+  (:require [sane-tabber.session :refer [app-state add-or-update!]]
             [sane-tabber.websockets :as ws]))
 
 (defn update-rooms! [msg]

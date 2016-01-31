@@ -1,22 +1,22 @@
 (ns sane-tabber.middleware
   (:require [sane-tabber.layout :refer [*app-context* error-page]]
-            [taoensso.timbre :as timbre]
-            [environ.core :refer [env]]
-            [selmer.middleware :refer [wrap-error-page]]
-            [prone.middleware :refer [wrap-exceptions]]
+            [clojure.tools.logging :as log]
+            [config.core :refer [env]]
             [ring.middleware.flash :refer [wrap-flash]]
             [immutant.web.middleware :refer [wrap-session]]
-            [ring.middleware.reload :as reload]
             [ring.middleware.webjars :refer [wrap-webjars]]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
             [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
             [ring.middleware.format :refer [wrap-restful-format]]
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
-            [buddy.auth.middleware :refer [wrap-authentication]]
+            [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
+            [buddy.auth.accessrules :refer [wrap-access-rules]]
+            [ring.middleware.ssl :refer [wrap-hsts wrap-ssl-redirect wrap-forwarded-scheme]]
             [buddy.auth.backends.session :refer [session-backend]]
-            [buddy.auth.accessrules :refer [restrict wrap-access-rules]]
+            [buddy.auth.accessrules :refer [restrict]]
             [buddy.auth :refer [authenticated?]]
             [sane-tabber.layout :refer [*identity*]]
+            [sane-tabber.config :refer [defaults]]
             [sane-tabber.auth :refer [rules]])
   (:import [javax.servlet ServletContext]))
 
@@ -40,18 +40,10 @@
     (try
       (handler req)
       (catch Throwable t
-        (timbre/error t)
+        (log/error t)
         (error-page {:status 500
                      :title "Something very bad has happened!"
                      :message "We've dispatched a team of highly trained gnomes to take care of the problem."})))))
-
-(defn wrap-dev [handler]
-  (if (env :dev)
-    (-> handler
-        reload/wrap-reload
-        wrap-error-page
-        wrap-exceptions)
-    handler))
 
 (defn wrap-csrf [handler]
   (wrap-anti-forgery
@@ -79,15 +71,23 @@
       (handler request))))
 
 (defn wrap-auth [handler]
+  (let [backend (session-backend)]
+    (-> handler
+        wrap-identity
+        (wrap-access-rules {:rules rules :on-error on-error})
+        (wrap-authentication backend)
+        (wrap-authorization backend))))
+
+(defn wrap-ssl [handler]
   (-> handler
-      wrap-identity
-      (wrap-access-rules {:rules rules :on-error on-error})
-      (wrap-authentication (session-backend))))
+      wrap-hsts
+      wrap-ssl-redirect
+      wrap-forwarded-scheme))
 
 (defn wrap-base [handler]
-  (-> handler
-      wrap-dev
+  (-> ((:middleware defaults) handler)
       wrap-auth
+      ;wrap-formats
       wrap-webjars
       wrap-flash
       (wrap-session {:cookie-attrs {:http-only true}})
@@ -96,5 +96,6 @@
             (assoc-in [:security :anti-forgery] false)
             (dissoc :session)))
       wrap-context
+      ;wrap-ssl
       wrap-internal-error
       wrap-multipart-params))

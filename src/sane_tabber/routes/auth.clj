@@ -1,8 +1,7 @@
 (ns sane-tabber.routes.auth
-  (:require [taoensso.timbre :as timbre]
+  (:require [clojure.tools.logging :as log]
             [compojure.core :refer [defroutes GET POST]]
             [ring.util.http-response :refer [ok]]
-            [taoensso.timbre :as timbre]
             [buddy.hashers :as hashers]
             [buddy.core.hash :as hash]
             [buddy.core.codecs :refer [hex->bytes bytes->hex]]
@@ -29,14 +28,14 @@
   (layout/render "legal.html"))
 
 (defn logout! [session]
-  (timbre/info (:identity session) "has logged out")
+  (log/info (:identity session) "has logged out")
   (assoc (ring-resp/redirect "/login") :session (assoc session :identity nil)))
 
 (defn authenticate [session username]
   (assoc (ring-resp/redirect "/") :session (assoc session :identity username)))
 
 (defn login! [username password session]
-  (timbre/info username "attempting to login")
+  (log/info username "attempting to login")
   (if-let [dbuser (db/get-user username)]
     (if (hashers/check password (:password dbuser))
       (authenticate session username)
@@ -66,7 +65,7 @@
                                [password-matches-validator (:verify-password data)]]))
 
 (defn register! [data session]
-  (timbre/info (:username data) "attempting to register")
+  (log/info (:username data) "attempting to register")
   (let [[errors form-data] (validate-registration data)]
     (if errors
       (register-page (-> errors first val))
@@ -76,7 +75,7 @@
   (str "http://" host "/reset-password?token=" (:token (db/create-reset user))))
 
 (defn forgot! [email host]
-  (timbre/info email "forgot password")
+  (log/info email "forgot password")
   (if-let [user (db/get-user-by-email email)]
     (do
       (mail/recovery-email email (generate-forgot-link host user))
@@ -84,7 +83,7 @@
     (forgot-page ["Please enter a registered email address"])))
 
 (defn reset-password! [token password]
-  (timbre/info "Attempting to reset password for token" token)
+  (log/info "Attempting to reset password for token" token)
   (if (not-empty password)
     (if-let [reset-item (db/get-reset token)]
       (do
