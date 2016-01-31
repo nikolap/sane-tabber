@@ -13,3 +13,4 @@ resources/public/js/app.js
 resources/public/js/out
 /.idea
 *.iml
+*.log*
