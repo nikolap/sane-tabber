@@ -8,13 +8,12 @@
   (add-or-update! :judges msg :_id))
 
 (defn update-scratches! [msg]
-  (prn msg)
   (if-let [old (get-by-id :scratches (:_id msg) :_id)]
     (remove-item! :scratches old)
     (add-item! :scratches msg)))
 
 (defn send-transit-toggle [judge k]
-  (ws/send-transit-msg! (update judge k #(not %))))
+  (ws/send-transit-msg! (update judge k #(not %)) :judges))
 
 (defn update-accessible [judge]
   (send-transit-toggle judge :accessible?))
@@ -23,13 +22,13 @@
   (send-transit-toggle judge :dropped?))
 
 (defn create-judge [judge]
-  (ws/send-transit-msg! judge))
+  (ws/send-transit-msg! judge :judges))
 
 (defn update-name [judge new-name]
-  (ws/send-transit-msg! (assoc judge :name new-name)))
+  (ws/send-transit-msg! (assoc judge :name new-name) :judges))
 
 (defn update-rating [judge new-rating]
-  (ws/send-transit-msg! (assoc judge :rating (js/parseInt new-rating))))
+  (ws/send-transit-msg! (assoc judge :rating (js/parseInt new-rating)) :judges))
 
 (defn new-judge-values []
   {:tournament-id (session/get :tid)

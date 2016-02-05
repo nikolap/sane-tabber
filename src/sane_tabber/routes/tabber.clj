@@ -65,7 +65,7 @@
 (defn create-tournament [owner {:keys [name team-count speak-count rooms-file schools-file judges-file teams-file]}]
   (log/info "Creating tournament" name "for" owner)
   (let [owner-id (:_id (db/get-user owner))
-        tournament-id (:_id (db/create-tournament owner-id name team-count speak-count))]
+        tournament-id (:_id (db/create-tournament owner-id name (Integer/parseInt team-count) (Integer/parseInt speak-count)))]
     (upload-rooms tournament-id rooms-file)
     (upload-schools tournament-id schools-file)
     (upload-judges tournament-id judges-file)
@@ -78,6 +78,10 @@
       (stringify-map
         (map #(assoc % :owner? (= user-id (:owner-id %))) (db/get-tournaments user-id))
         [:_id :owner-id :editors]))))
+
+(defn get-tournament [tid]
+  (wrap-transit-resp
+    (stringify-reduce (db/get-tournament tid) [:_id :owner-id :editors])))
 
 (defn get-rooms [tid]
   (wrap-transit-resp
@@ -116,6 +120,7 @@
            (GET "/ajax/tournaments" {:keys [session]} (get-tournaments (:identity session)))
            (POST "/ajax/tournaments" {:keys [session params]} (create-tournament (:identity session) params))
            (context "/ajax/tournaments/:tid" [tid]
+             (GET "/" [] (get-tournament tid))
              (GET "/rooms" [] (get-rooms tid))
              (GET "/teams" [] (get-teams tid))
              (GET "/teams-speakers" [] (get-teams-with-speakers tid))

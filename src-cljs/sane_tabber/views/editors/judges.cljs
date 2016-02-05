@@ -3,8 +3,11 @@
             [sane-tabber.session :refer [app-state get-by-id]]
             [sane-tabber.controllers.editors.judges :refer [update-name update-rating update-accessible update-dropped
                                                             submit-new-judge submit-scratch send-scratch]]
-            [sane-tabber.views.generic :refer [checkbox select-custom-form-element]]
+            [sane-tabber.views.generic :refer [checkbox select-custom-form-element input-editor-cell]]
             [sane-tabber.utils :refer [id-value event-value]]))
+
+(defn format-team-name [{:keys [school-id team-code]}]
+  (str (:name (get-by-id :schools school-id :_id)) " " team-code))
 
 (defn judge-table-footer []
   [:tr
@@ -28,21 +31,6 @@
           {:on-click submit-new-judge}
           [:i.fa.fa-plus] " Add Judge"]]]])
 
-(defn judge-name-cell [judge]
-  (let [v (reagent/atom (:name judge))]
-    (fn [judge]
-      [:td
-       [:div.col-xs-11>input.form-control.input-sm
-        {:type        "text"
-         :value       @v
-         :on-change   #(reset! v (event-value %))
-         :on-key-down #(when (= (.-keyCode %) 13)
-                        (update-name judge @v))}]
-       [:button.btn.btn-success.btn-xs.pull-right
-        {:type     "button"
-         :on-click #(update-name judge @v)}
-        [:i.fa.fa-check]]])))
-
 (defn judges-table [judges]
   [:table.table.table-striped.table-condensed.table-hover.table-bordered.table-centered.table-fixed
    [:thead>tr
@@ -54,7 +42,7 @@
     (for [{:keys [_id name rating accessible? dropped?] :as judge} (sort-by :name judges)]
       ^{:key _id}
       [:tr
-       [judge-name-cell judge]
+       [input-editor-cell judge :name update-name]
        [:td
         [:select.form-control.input-sm
          {:value     rating

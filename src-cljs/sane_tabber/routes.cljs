@@ -11,6 +11,7 @@
             [sane-tabber.views.home :refer [home-page]]
             [sane-tabber.views.new-tournament :refer [new-tournament-page]]
             [sane-tabber.views.dashboard :refer [dashboard-page]]
+            [sane-tabber.views.registration :refer [registration-page]]
             [sane-tabber.views.editors.rooms :refer [rooms-editor-page]]
             [sane-tabber.views.editors.judges :refer [judges-editor-page]]
             [sane-tabber.views.editors.teams :refer [teams-editor-page]]))
@@ -21,6 +22,7 @@
   {:home           #'home-page
    :new-tournament #'new-tournament-page
    :dashboard      #'dashboard-page
+   :registration   #'registration-page
    :room-editor    #'rooms-editor-page
    :judge-editor   #'judges-editor-page
    :team-editor    #'teams-editor-page})
@@ -36,6 +38,18 @@
 (secretary/defroute "/:tid/dashboard" [tid]
                     (session/put! :tid tid)
                     (session/put! :page :dashboard))
+(secretary/defroute "/:tid/registration" [tid]
+                    (session/put! :tid tid)
+                    (basic-get (str "/ajax/tournaments/" tid "/") :tournament)
+                    (basic-get (str "/ajax/tournaments/" tid "/teams") :teams)
+                    (basic-get (str "/ajax/tournaments/" tid "/schools") :schools)
+                    (basic-get (str "/ajax/tournaments/" tid "/judges") :judges)
+                    (basic-get (str "/ajax/tournaments/" tid "/speakers") :speakers)
+                    (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/teams") update-teams! :teams)
+                    (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/speakers") update-speakers! :speakers)
+                    (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/judges") update-judges! :judges)
+                    (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/scratches") update-scratches! :scratches)
+                    (session/put! :page :registration))
 (secretary/defroute "/:tid/editor/rooms" [tid]
                     (session/put! :tid tid)
                     (basic-get (str "/ajax/tournaments/" tid "/rooms") :rooms)
@@ -47,11 +61,12 @@
                     (basic-get (str "/ajax/tournaments/" tid "/teams") :teams)
                     (basic-get (str "/ajax/tournaments/" tid "/scratches") :scratches)
                     (basic-get (str "/ajax/tournaments/" tid "/schools") :schools)
-                    (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/judges") update-judges!)
+                    (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/judges") update-judges! :judges)
                     (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/scratches") update-scratches! :scratches)
                     (session/put! :page :judge-editor))
 (secretary/defroute "/:tid/editor/teams" [tid]
                     (session/put! :tid tid)
+                    (basic-get (str "/ajax/tournaments/" tid "/") :tournament)
                     (basic-get (str "/ajax/tournaments/" tid "/teams") :teams)
                     (basic-get (str "/ajax/tournaments/" tid "/schools") :schools)
                     (basic-get (str "/ajax/tournaments/" tid "/speakers") :speakers)

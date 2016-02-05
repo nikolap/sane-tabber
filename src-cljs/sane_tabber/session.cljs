@@ -14,8 +14,11 @@
                                      k
                                      [k]) f args))
 
+(defn get-multi [k id id-key]
+  (filter #(= (id-key %) id) (get @app-state k)))
+
 (defn get-by-id [k id id-key]
-  (filter-first #(= (id-key %) id) (get @app-state k)))
+  (first (get-multi k id id-key)))
 
 (defn add-item! [k item]
   (update! k conj item))

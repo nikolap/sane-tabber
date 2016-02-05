@@ -35,7 +35,8 @@
    (when id
      (if (instance? ObjectId id)
        id
-       (ObjectId. ^String id)))))
+       (when-not (clojure.string/blank? id)
+         (ObjectId. ^String id))))))
 
 (defn oid-conv [item]
   (if (coll? item) (mapv object-id item) (object-id item)))
@@ -95,16 +96,16 @@
   (batch-insert "rooms" data))
 
 (defn batch-create-schools [data]
-  (batch-insert "rooms" data))
+  (batch-insert "schools" data))
 
 (defn batch-create-judges [data]
-  (batch-insert "rooms" data))
+  (batch-insert "judges" data))
 
 (defn batch-create-teams [data]
-  (batch-insert "rooms" data))
+  (batch-insert "teams" data))
 
 (defn batch-create-speakers [data]
-  (batch-insert "rooms" data))
+  (batch-insert "speakers" data))
 
 (defn get-schools [tid]
   (get-by-tid "schools" tid))
@@ -145,6 +146,9 @@
    (mc/find-maps @db "tournaments" {$or [{:owner-id (object-id user-id)}
                                          {:editors {$in [(object-id user-id)]}}]})))
 
+(defn get-tournament [tid]
+  (mc/find-map-by-id @db "tournaments" (object-id tid)))
+
 (defn get-rooms [tournament-id]
   (mc/find-maps @db "rooms" {:tournament-id (object-id tournament-id)}))
 
@@ -156,14 +160,14 @@
     (mc/update-by-id @db "rooms" (:_id room) {$set room})))
 
 (defn create-team [team]
-  (insert-return @db "teams" (:_id team) {$set team}))
+  (insert-return @db "teams" (object-idify team [:tournament-id])))
 
 (defn update-team [team]
   (let [team (object-idify team [:_id :tournament-id :school-id])]
     (mc/update-by-id @db "teams" (:_id team) {$set team})))
 
 (defn create-speaker [speaker]
-  (insert-return @db "speakers" (:_id speaker) {$set speaker}))
+  (insert-return @db "speakers" (object-idify speaker [:tournament-id])))
 
 (defn update-speaker [speaker]
   (let [speaker (object-idify speaker [:_id :tournament-id :team-id])]
