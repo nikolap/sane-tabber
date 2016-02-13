@@ -7,7 +7,8 @@
             [buddy.hashers :as hashers]
             [buddy.core.hash :refer [sha256]]
             [buddy.core.codecs :refer [bytes->hex]]
-            [buddy.core.nonce :refer [random-nonce]])
+            [buddy.core.nonce :refer [random-nonce]]
+            [sane-tabber.utils :refer [max-inc]])
   (:import (org.bson.types ObjectId)))
 
 (defonce db (atom nil))
@@ -149,8 +150,8 @@
 (defn get-tournament [tid]
   (mc/find-map-by-id @db "tournaments" (object-id tid)))
 
-(defn get-rooms [tournament-id]
-  (mc/find-maps @db "rooms" {:tournament-id (object-id tournament-id)}))
+(defn get-rooms [tid]
+  (mc/find-maps @db "rooms" {:tournament-id (object-id tid)}))
 
 (defn create-room [room]
   (insert-return @db "rooms" (object-idify room [:tournament-id])))
@@ -172,3 +173,17 @@
 (defn update-speaker [speaker]
   (let [speaker (object-idify speaker [:_id :tournament-id :team-id])]
     (mc/update-by-id @db "speakers" (:_id speaker) {$set speaker})))
+
+(defn get-rounds [tid]
+  (mc/find-maps @db "rounds" {:tournament-id (object-id tid)}))
+
+(defn create-round [tid]
+  (let [round-num (->> tid
+                       get-rounds
+                       (map :round-number)
+                       max-inc)]
+    (insert-return @db "rounds" {:round-number  round-num
+                                 :tournament-id (object-id tid)})))
+
+(defn delete-round [rid]
+  (mc/remove-by-id @db "rounds" (object-id rid)))

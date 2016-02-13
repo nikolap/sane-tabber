@@ -28,7 +28,6 @@
 
 (defn unused-speakers
   ([speakers ids]
-   (prn (map :_id speakers))
    (filter #(and (empty? (:team-id %))
                  (not (contains? (set ids) (:_id %)))) speakers))
   ([speakers]

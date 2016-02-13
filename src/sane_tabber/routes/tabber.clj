@@ -1,5 +1,5 @@
 (ns sane-tabber.routes.tabber
-  (:require [compojure.core :refer [defroutes GET POST context]]
+  (:require [compojure.core :refer [defroutes GET POST DELETE context]]
             [ring.util.http-response :refer [ok]]
             [clojure.data.csv :as csv]
             [clojure.java.io :as io]
@@ -110,8 +110,20 @@
   (wrap-transit-resp
     (stringify-map (db/get-schools tid) [:_id :tournament-id])))
 
+(defn get-rounds [tid]
+  (wrap-transit-resp
+    (stringify-map (db/get-rounds tid) [:_id :tournament-id])))
+
 (defn delete-tournament [id]
   (db/delete-tournament id)
+  "success")
+
+(defn create-round [tid]
+  (wrap-transit-resp
+    (stringify-reduce (db/create-round tid) [:_id :tournament-id])))
+
+(defn delete-round [rid]
+  (db/delete-round rid)
   "success")
 
 (defroutes tabber-routes
@@ -128,5 +140,9 @@
              (GET "/judges" [] (get-judges tid))
              (GET "/scratches" [] (get-scratches tid))
              (GET "/schools" [] (get-schools tid))
-             (POST "/delete" [] (delete-tournament tid))))
+             (GET "/rounds" [] (get-rounds tid))
+             (DELETE "/delete" [] (delete-tournament tid))
+             (POST "/rounds/new" [] (create-round tid))
+             (POST "/rounds/:rid/autopair" [rid] (prn tid rid))
+             (DELETE "/rounds/:rid" [rid] (delete-round rid))))
 

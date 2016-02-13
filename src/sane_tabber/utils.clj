@@ -28,3 +28,9 @@
   {:status  200
    :headers {"Content-Type" "applications/transit+json; charset=utf-8"}
    :body    (write-transit-str resp)})
+
+(defn inc* [n]
+  (if n (inc n) 0))
+
+(defn max-inc [coll]
+  (if (empty? coll) 1 (inc (apply max coll))))

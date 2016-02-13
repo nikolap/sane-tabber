@@ -9,6 +9,8 @@
   (when-let [elem (sel1 id)]
     (.-checked elem)))
 
+(defn reload [] (.reload js/location))
+
 (defn index-of [coll v]
   (let [i (count (take-while #(not= v %) coll))]
     (when (or (< i (count coll))

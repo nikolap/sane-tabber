@@ -59,3 +59,12 @@
         {:type     "button"
          :on-click #(update-fn item @v)}
         [:i.fa.fa-check]]])))
+
+(defn removable-label [{:keys [name] :as item} update-fn & [removal-coll params]]
+  [:span.tag.label.label-primary
+   (merge {} params)
+   [:span name]
+   [:a>i.remove.glyphicon.glyphicon-remove-sign.glyphicon-white
+    {:on-click #(if removal-coll
+                 (swap! removal-coll disj item)
+                 (update-fn))}]])

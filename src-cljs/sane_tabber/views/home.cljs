@@ -1,11 +1,7 @@
 (ns sane-tabber.views.home
-  (:require [ajax.core :refer [POST]]
+  (:require [ajax.core :refer [DELETE]]
             [sane-tabber.session :refer [app-state]]
-            [sane-tabber.utils :refer [id-value]]))
-
-(def csrf-token (id-value :#__anti-forgery-token))
-
-(defn reload [] (.reload js/location))
+            [sane-tabber.utils :refer [id-value reload]]))
 
 (defn home-header []
   [:section.content-header
@@ -31,9 +27,9 @@
           [:button.btn.btn-xs.btn-danger.btn-flat
            {:type     "button"
             :on-click #(if (js/confirm "Are you sure you wish to delete this tournament? No backsies!")
-                        (POST (str "/ajax/tournaments/" _id "/delete")
-                              {:headers {:x-csrf-token csrf-token}
-                               :handler reload}))}
+                        (DELETE (str "/ajax/tournaments/" _id "/delete")
+                                {:headers {:x-csrf-token (id-value :#__anti-forgery-token)}
+                                 :handler reload}))}
            "Delete"])]])]])
 
 (defn home-body []
