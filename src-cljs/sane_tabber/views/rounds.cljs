@@ -2,7 +2,7 @@
   (:require [reagent.session :as session]
             [sane-tabber.session :refer [app-state]]
             [sane-tabber.utils :refer [dispatch!]]
-            [sane-tabber.controllers.rounds :refer [create-round! delete-round! auto-pair-round]]))
+            [sane-tabber.controllers.rounds :refer [create-round! delete-round! auto-pair-round auto-pair-click]]))
 
 ;; show status -- whether round is paired? Is it tabbed (scores entered)?
 ; automatically pair
@@ -27,7 +27,7 @@
        [:td>div.btn-group
         [:button.btn.btn-success.btn-xs.btn-flat
          {:type     "button"
-          :on-click #(auto-pair-round _id)}
+          :on-click #(auto-pair-click _id status)}
          "Auto Pair"]
         [:button.btn.btn-primary.btn-xs.btn-flat
          {:type "button"

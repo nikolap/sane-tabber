@@ -45,8 +45,8 @@
 (defn object-idify [m ks]
   (reduce #(update-in %1 [%2] oid-conv) m ks))
 
-(defn get-by-tid [coll tid]
-  (mc/find-maps @db coll {:tournament-id (object-id tid)}))
+(defn get-by-tid [coll tid & [args]]
+  (mc/find-maps @db coll (merge {:tournament-id (object-id tid)} args)))
 
 (defn batch-insert [coll data]
   (mc/insert-batch @db coll data))
@@ -177,6 +177,9 @@
 (defn get-rounds [tid]
   (mc/find-maps @db "rounds" {:tournament-id (object-id tid)}))
 
+(defn get-round [rid]
+  (mc/find-map-by-id @db "rounds" (object-id rid)))
+
 (defn create-round [tid]
   (let [round-num (->> tid
                        get-rounds
@@ -187,3 +190,33 @@
 
 (defn delete-round [rid]
   (mc/remove-by-id @db "rounds" (object-id rid)))
+
+(defn get-all-round-rooms [tid]
+  (mc/find-maps @db "round-rooms" {:tournament-id (object-id tid)}))
+
+(defn get-all-scored-round-rooms [tid]
+  (mc/find-maps @db "round-rooms" {:tournament-id (object-id tid)
+                                   :ballot {$exists true}}))
+
+(defn get-round-rooms [rid]
+  (prn rid)
+  (mc/find-maps @db "round-rooms" {:round-id (object-id rid)}))
+
+(defn get-active-teams [tid]
+  (get-by-tid "teams" tid {:signed-in? true}))
+
+(defn get-active-rooms [tid]
+  (get-by-tid "rooms" tid {:disabled? false}))
+
+(defn get-active-judges [tid]
+  (get-by-tid "judges" tid {:dropped? true}))
+
+(defn batch-insert-round-rooms [tid rid round-rooms]
+  (batch-insert "round-rooms" (map #(assoc % :tournament-id (object-id tid)
+                                             :round-id (object-id rid)) round-rooms)))
+
+(defn update-round [round]
+  (mc/save @db "rounds" round))
+
+(defn clear-round-room-data [rid]
+  (mc/remove @db "round-rooms" {:round-id (object-id rid)}))

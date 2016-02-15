@@ -24,3 +24,8 @@
         {:headers         {:x-csrf-token (id-value :#__anti-forgery-token)}
          :handler         #(dispatch! (str "#/" (session/get :tid) "/pairings/" round-id))
          :error-handler   error-handler}))
+
+(defn auto-pair-click [round-id status]
+  (if (or (not status)
+          (js/confirm "Are you sure you wish to autopair the round? This round appears to already be paired or complete."))
+    (auto-pair-round round-id)))

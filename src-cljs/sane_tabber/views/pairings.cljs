@@ -39,7 +39,6 @@
 (defn pairings-head [{:keys [team-count settings]}]
   [:thead>tr
    [:th "Room"]
-   (prn team-count (type team-count))
    (for [i (range team-count)]
        ^{:key i}
        [:th (or (nth (:position-names settings) i)
@@ -62,7 +61,7 @@
          {:type     "button"
           :on-click #(reset! tooltip-data {:left      (.-pageX %)
                                            :top       (.-pageY %)
-                                           :items     (unused-judges judges round-rooms)
+                                            :items     (unused-judges judges round-rooms)
                                            :new-items new-round-judges
                                            :header    "Judge"})}
          [:i.fa.fa-plus]]
@@ -76,15 +75,19 @@
   [:table.table.table-striped.table-condensed.table-hover
    [pairings-head tournament]
    [:tbody
-    (for [rr round-rooms]
-      ^{:key rr}
+    (for [{:keys [_id room judges teams] :as rr} round-rooms
+          :let [room (get-by-id :rooms room :_id)
+                judges (map #(get-by-id :judges % :_id) judges)]]
+      ^{:key _id}
       [:tr
-       [:td "n"]])
+       [:td (:name room)]
+       [:td (map :name judges)]])
     [pairings-footer tournament round-rooms rooms teams judges]]])
 
 (defn pairings-page []
   [:section.content>div.row
    [:div.col-sm-8
+    (prn (:round-rooms @app-state))
     [tooltip @tooltip-data judge-tooltip-submit]
     [:div.box.box-primary
      [:div.box-header.with-border>h3.box-title "Pairings"]

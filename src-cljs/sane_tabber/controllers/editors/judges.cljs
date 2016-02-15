@@ -22,7 +22,7 @@
   (send-transit-toggle judge :dropped?))
 
 (defn create-judge [judge]
-  (ws/send-transit-msg! judge :judges))
+  (ws/send-transit-msg! (update judge :rating js/parseInt) :judges))
 
 (defn update-name [judge new-name]
   (ws/send-transit-msg! (assoc judge :name new-name) :judges))

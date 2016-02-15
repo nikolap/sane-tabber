@@ -37,10 +37,11 @@
   (ws/send-transit-msg! team :teams))
 
 (defn submit-new-team []
-  (create-team {:school-id   (id-value :#new-team-school-id)
-                :team-code   (id-value :#new-team-code)
-                :accessible? (id-checked :#new-team-accessible)
-                :signed-in?  (id-checked :#new-team-signed-in)})
+  (create-team {:school-id     (id-value :#new-team-school-id)
+                :team-code     (id-value :#new-team-code)
+                :accessible?   (id-checked :#new-team-accessible)
+                :signed-in?    (id-checked :#new-team-signed-in)
+                :tournament-id (session/get :tid)})
   (dom/set-value! (sel1 :#new-team-code) nil))
 
 (defn update-speaker-name [speaker new-name]

@@ -6,7 +6,8 @@
             [clojure.tools.logging :as log]
             [sane-tabber.layout :as layout]
             [sane-tabber.db.core :as db]
-            [sane-tabber.utils :refer [stringify-reduce stringify-map wrap-transit-resp]]))
+            [sane-tabber.utils :refer [stringify-reduce stringify-map wrap-transit-resp]]
+            [sane-tabber.pairings :refer [pair-round]]))
 
 (defn app-page []
   (layout/render "home.html"))
@@ -114,6 +115,10 @@
   (wrap-transit-resp
     (stringify-map (db/get-rounds tid) [:_id :tournament-id])))
 
+(defn get-round-rooms [rid]
+  (wrap-transit-resp
+    (stringify-map (db/get-round-rooms rid) [:_id :tournament-id :round-id :room :judges])))
+
 (defn delete-tournament [id]
   (db/delete-tournament id)
   "success")
@@ -121,6 +126,19 @@
 (defn create-round [tid]
   (wrap-transit-resp
     (stringify-reduce (db/create-round tid) [:_id :tournament-id])))
+
+(defn autopair-round [tid rid]
+  (log/info "Autopairing round for tournament" tid "and round" rid)
+  (db/clear-round-room-data rid)
+  (let [teams (db/get-active-teams tid)
+        judges (db/get-active-judges tid)
+        rooms (db/get-active-rooms tid)
+        scratches (db/get-scratches tid)
+        round-rooms (db/get-all-scored-round-rooms tid)
+        round (db/get-round rid)]
+    (db/batch-insert-round-rooms tid rid (pair-round teams judges rooms scratches round-rooms))
+    (db/update-round (assoc round :status "paired"))
+    "success"))
 
 (defn delete-round [rid]
   (db/delete-round rid)
@@ -141,8 +159,9 @@
              (GET "/scratches" [] (get-scratches tid))
              (GET "/schools" [] (get-schools tid))
              (GET "/rounds" [] (get-rounds tid))
+             (GET "/:rid/round-rooms" [rid] (get-round-rooms rid))
              (DELETE "/delete" [] (delete-tournament tid))
              (POST "/rounds/new" [] (create-round tid))
-             (POST "/rounds/:rid/autopair" [rid] (prn tid rid))
+             (POST "/rounds/:rid/autopair" [rid] (autopair-round tid rid))
              (DELETE "/rounds/:rid" [rid] (delete-round rid))))
 
