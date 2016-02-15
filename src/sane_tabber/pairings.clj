@@ -1,11 +1,12 @@
-(ns sane-tabber.pairings)
+(ns sane-tabber.pairings
+  (:require [sane-tabber.statistics :refer [judge-seen-teams]]))
 
 ;; ----Potential logic for auto-pairing----
 ;; 1. pair teams based off of score
 ;; 2. assign position based off of least full position usage
-;; 3. assign rooms based off of accessible vs not accessible
-;; 4. assign judges based off of rating (high judge rating = high rooms). Accessible judges in accessible rooms
-;; 5. prioritize minimizing judges seeing the same teams repeatedly
+;; 3. assign rooms based off of accessible vs not accessible [x]
+;; 4. assign judges based off of rating (high judge rating = high rooms). Accessible judges in accessible rooms [x]
+;; 5. prioritize minimizing judges seeing the same teams repeatedly [x]
 
 (defn base-group-teams [teams]
   (->> teams
@@ -48,16 +49,27 @@
 (defn update-rr [round-rooms old new]
   (conj (filter (partial not= old) round-rooms) new))
 
-(defn base-judge-looper [judges scratches round-rooms]
+(defn judge-seen-count [prev-round-data judge round-rooms]
+  (map #(assoc % :judge-seen-count
+                 (judge-seen-teams prev-round-data (:_id judge) (keys (:teams %))))
+       round-rooms))
+
+(defn assign-judge-round-room [round-rooms scratches judge prev-round-data]
+  (dissoc
+    (->> (rr-judge-filter round-rooms scratches judge)
+         (judge-seen-count prev-round-data judge)
+         (sort-by (juxt :judge-seen-count (comp count :judges)))
+         first)
+    :judge-seen-count))
+
+(defn judge-looper [judges scratches prev-round-data round-rooms]
   (loop [round-rooms round-rooms
          judge (first judges)
          judges (rest judges)]
-    (if (empty? judges)
-      round-rooms
-      (let [rr (->> (rr-judge-filter round-rooms scratches judge)
-                    (sort-by #(count (:judges %)))
-                    first)]
-        (recur (update-rr round-rooms rr (update rr :judges conj judge)) (first judges) (rest judges))))))
+    (if judge
+      (let [rr (assign-judge-round-room round-rooms scratches judge prev-round-data)]
+        (recur (update-rr round-rooms rr (update rr :judges conj judge)) (first judges) (rest judges)))
+      round-rooms)))
 
 (defn idify-teams [tmap]
   (let [[t1 t2] (map (comp :_id first) (sort-by val tmap))]
@@ -77,7 +89,7 @@
     (->> paired-teams
          (map team-map)
          (room-assigner rooms)
-         (base-judge-looper (sort-by :rating > judges) scratches)
+         (judge-looper (sort-by :rating > judges) scratches [])
          idify)))
 
 (defn pair-round [teams judges rooms scratches prev-round-data]

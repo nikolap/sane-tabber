@@ -43,6 +43,7 @@
   (if (coll? item) (mapv object-id item) (object-id item)))
 
 (defn object-idify [m ks]
+  (prn m ks)
   (reduce #(update-in %1 [%2] oid-conv) m ks))
 
 (defn get-by-tid [coll tid & [args]]
@@ -199,7 +200,6 @@
                                    :ballot {$exists true}}))
 
 (defn get-round-rooms [rid]
-  (prn rid)
   (mc/find-maps @db "round-rooms" {:round-id (object-id rid)}))
 
 (defn get-active-teams [tid]
@@ -220,3 +220,10 @@
 
 (defn clear-round-room-data [rid]
   (mc/remove @db "round-rooms" {:round-id (object-id rid)}))
+
+(defn create-round-room [round-room]
+  (insert-return @db "round-rooms" (object-idify round-room [:tournament-id :round-id :room :judges])))
+
+(defn update-round-room [round-room]
+  (let [round-room (object-idify round-room [:_id :tournament-id :round-id :room :judges])]
+    (mc/update-by-id @db "round-rooms" (:_id round-room) {$set round-room})))

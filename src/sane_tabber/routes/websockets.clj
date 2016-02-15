@@ -73,10 +73,18 @@
 (defn speakers-handler [request]
   (async/as-channel request (websocket-callbacks speakers-notifier!)))
 
+(defn round-rooms-notifier! [channel msg]
+  (basic-notifier channel msg db/update-round-room db/create-round-room [:_id :tournament-id :round-id :team-id :room :judges]))
+
+(defn round-rooms-handler [request]
+  (async/as-channel request (websocket-callbacks round-rooms-notifier!)))
+
 (defroutes websocket-routes
            (context "/ws/:tid" [tid]
+             (GET "/round-rooms" [] round-rooms-handler)
              (GET "/editor/rooms" [] rooms-handler)
              (GET "/editor/judges" [] judges-handler)
              (GET "/editor/scratches" [] scratches-handler)
              (GET "/editor/teams" [] teams-handler)
-             (GET "/editor/speakers" [] speakers-handler)))
+             (GET "/editor/speakers" [] speakers-handler)
+             (GET "/:rid/round-rooms" [rid] round-rooms-handler)))

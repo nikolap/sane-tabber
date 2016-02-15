@@ -27,3 +27,6 @@
 
 (defn event-value [e]
   (-> e .-target .-value))
+
+(defn duplicates? [xs]
+  (not= (count (distinct xs)) (count xs)))

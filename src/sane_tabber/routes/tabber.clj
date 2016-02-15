@@ -115,6 +115,10 @@
   (wrap-transit-resp
     (stringify-map (db/get-rounds tid) [:_id :tournament-id])))
 
+(defn get-all-round-rooms [tid]
+  (wrap-transit-resp
+    (stringify-map (db/get-all-round-rooms tid) [:_id :tournament-id :round-id :room :judges])))
+
 (defn get-round-rooms [rid]
   (wrap-transit-resp
     (stringify-map (db/get-round-rooms rid) [:_id :tournament-id :round-id :room :judges])))
@@ -159,6 +163,7 @@
              (GET "/scratches" [] (get-scratches tid))
              (GET "/schools" [] (get-schools tid))
              (GET "/rounds" [] (get-rounds tid))
+             (GET "/round-rooms" [] (get-all-round-rooms tid))
              (GET "/:rid/round-rooms" [rid] (get-round-rooms rid))
              (DELETE "/delete" [] (delete-tournament tid))
              (POST "/rounds/new" [] (create-round tid))
