@@ -12,13 +12,16 @@
 (defn school-name [id]
   (:name (get-school id)))
 
+(defn team-name [{:keys [school-id team-code]}]
+  (str (school-name school-id) " " team-code))
+
 (defn teams-select [id teams]
   [:select.form-control.input-sm
    {:id id}
    [:option nil]
-   (for [{:keys [_id school-id team-code]} teams]
+   (for [{:keys [_id] :as team} teams]
      ^{:key _id}
-     [:option {:value _id} (str (school-name school-id) " " team-code)])])
+     [:option {:value _id} (team-name team)])])
 
 (defn judge-tooltip-submit [select-value round-room-id new-judges]
   (when-let [judge (get-by-id :judges select-value :_id)]
@@ -77,17 +80,20 @@
    [:tbody
     (for [{:keys [_id room judges teams] :as rr} round-rooms
           :let [room (get-by-id :rooms room :_id)
+                teams (map #(get-by-id :teams (name (first %)) :_id) (sort-by val teams))
                 judges (map #(get-by-id :judges % :_id) judges)]]
       ^{:key _id}
       [:tr
        [:td (:name room)]
+       (for [{:keys [_id] :as team} teams]
+         ^{:key _id}
+         [:td (team-name team)])
        [:td (map :name judges)]])
     [pairings-footer tournament round-rooms rooms teams judges]]])
 
 (defn pairings-page []
   [:section.content>div.row
    [:div.col-sm-8
-    (prn (:round-rooms @app-state))
     [tooltip @tooltip-data judge-tooltip-submit]
     [:div.box.box-primary
      [:div.box-header.with-border>h3.box-title "Pairings"]

@@ -23,23 +23,23 @@
        (some :accessible?)))
 
 (defn sort-accessible-round-rooms [round-rooms]
-  (sort-by teams-accessible? round-rooms))
+  (reverse (sort-by teams-accessible? round-rooms)))
 
 (defn room-assigner [rooms round-rooms]
   (map (fn [rr room]
          (assoc rr :room room))
        (sort-accessible-round-rooms round-rooms)
-       (sort-by :accessible? rooms)))
+       (reverse (sort-by :accessible? rooms))))
 
 (defn team-ids [round-room]
   (map :_id (keys (:team round-room))))
 
 (defn rr-filter [scratch-team-id judge round-room]
-  (if (or (and (:accessible? judge)
-               (not (get-in round-room [:room :accesible?])))
-          (contains? (set (team-ids round-room)) scratch-team-id))
-    false
-    true))
+  (and
+    (or (not (:accessible? judge))
+        (and (:accessible? judge)
+             (get-in round-room [:room :accessible?])))
+    (not (contains? (set (team-ids round-room)) scratch-team-id))))
 
 (defn rr-judge-filter [round-rooms scratches judge]
   (let [scratch (:team-id (filter #(= (:judge-id %) (:_id judge)) scratches))]
@@ -60,7 +60,7 @@
         (recur (update-rr round-rooms rr (update rr :judges conj judge)) (first judges) (rest judges))))))
 
 (defn idify-teams [tmap]
-  (let [[t1 t2] (map :_id (keys tmap))]
+  (let [[t1 t2] (map (comp :_id first) (sort-by val tmap))]
     {(str t1) 1
      (str t2) 2}))
 
