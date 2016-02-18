@@ -84,7 +84,7 @@
                     (basic-get (str "/ajax/tournaments/" tid "/judges") :judges)
                     (basic-get (str "/ajax/tournaments/" tid "/rooms") :rooms)
                     (basic-get (str "/ajax/tournaments/" tid "/rounds") :rounds)
-                    ;(basic-get (str "/ajax/tournaments/" tid "/round-rooms") :round-rooms)
+                    (basic-get (str "/ajax/tournaments/" tid "/speakers") :speakers)
                     (session/put! :page :ballots))
 (secretary/defroute "/:tid/editor/rooms" [tid]
                     (session/put! :tid tid)
