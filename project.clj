@@ -81,7 +81,8 @@
                                  [ring/ring-devel "1.4.0"]
                                  [pjstadig/humane-test-output "0.7.1"]
                                  [lein-figwheel "0.5.0-3"]
-                                 [com.cemerick/piggieback "0.2.2-SNAPSHOT"]]
+                                 [com.cemerick/piggieback "0.2.2-SNAPSHOT"]
+                                 [org.clojure/tools.namespace "0.3.0-alpha3"]]
                   :plugins [[lein-figwheel "0.5.0-3"] [org.clojure/clojurescript "1.7.228"]]
                    :cljsbuild
                    {:builds
