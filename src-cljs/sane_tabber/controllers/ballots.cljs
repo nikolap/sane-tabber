@@ -14,3 +14,6 @@
     (when-not (empty? rid)
       (basic-get (str "/ajax/tournaments/" (session/get :tid) "/" rid "/round-rooms") :round-rooms)
       (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" (session/get :tid) "/" rid "/round-rooms") update-round-rooms! :round-rooms))))
+
+(defn submit-ballot! [round-room ballot-data]
+  (ws/send-transit-msg! (assoc round-room :ballot ballot-data) :round-rooms))

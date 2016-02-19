@@ -1,9 +1,9 @@
 (ns sane-tabber.views.ballots
   (:require [reagent.core :as reagent]
-            [sane-tabber.utils :refer [event-value]]
+            [sane-tabber.utils :refer [event-value index-of]]
             [sane-tabber.session :refer [app-state get-by-id get-multi]]
             [sane-tabber.views.pairings :refer [team-name]]
-            [sane-tabber.controllers.ballots :refer [on-change-round!]]))
+            [sane-tabber.controllers.ballots :refer [on-change-round! submit-ballot!]]))
 
 (defn round-selection [{:keys [rounds active-round]}]
   [:div.form-group.col-sm-4.col-sm-offset-8
@@ -52,6 +52,12 @@
               :on-click    #(swap! app-state assoc :active-round-room _id)}
              "Add Ballot"])]]))]])
 
+(defn get-team-score [active-scores team-id]
+  (apply + (vals (get active-scores team-id))))
+
+(defn get-team-rank [active-scores team-id]
+  (index-of (map first (sort-by #(apply + (second %)) > active-scores)) team-id))
+
 (defn ballot-modal [{:keys [active-round-room active-scores]}]
   [:div#ballot-modal.modal.fade>div.modal-dialog>div.modal-content
    [:div
@@ -90,15 +96,32 @@
              [:div.form-group.col-sm-12
               [:label "Total score"]
               [:input.form-control.input-sm
-               {:value    (apply + (vals (get active-scores _id)))
+               {:value    (get-team-score active-scores _id)
                 :disabled true}]]]))]
+       ;{:teams    {:id {:points n
+       ;                 :score  n}}
+       ;            :speakers {:id score}
        [:div.modal-footer
         [:button.btn.btn-default.pull-left
          {:data-dismiss "modal"
           :type         "button"
           :on-click     #(swap! app-state assoc :active-scores {} :active-round-room nil)} "Close"]
-        [:button.btn.btn-primary {:type     "button"
-                                  :on-click #(prn "asdf")} "Submit Ballot"]]])]])
+        [:button.btn.btn-primary
+         {:type     "button"
+          :on-click (fn []
+                      (prn {:teams    (apply merge
+                                             (map #(let [team-id (:_id %)]
+                                                    {team-id {:rank  (get-team-rank active-scores team-id)
+                                                              :score (get-team-score active-scores team-id)}})
+                                                  rr-teams))
+                            :speakers {}})
+                      #_(submit-ballot! round-room
+                                        {:teams    (apply merge
+                                                          (map #(let [team-id (:_id %)]
+                                                                 {team-id {:point (get-team-rank active-scores team-id)
+                                                                           :score (get-team-score active-scores team-id)}})
+                                                               rr-teams))
+                                         :speakers {}}))} "Submit Ballot"]]])]])
 
 (defn ballots-page []
   [:section.content>div.row
