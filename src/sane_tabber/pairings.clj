@@ -1,5 +1,5 @@
 (ns sane-tabber.pairings
-  (:require [sane-tabber.statistics :refer [judge-seen-teams]]))
+  (:require [sane-tabber.statistics :refer [judge-seen-teams team-points team-speaks team-position-counts]]))
 
 ;; ----Potential logic for auto-pairing----
 ;; 1. pair teams based off of score
@@ -71,10 +71,78 @@
         (recur (update-rr round-rooms rr (update rr :judges conj judge)) (first judges) (rest judges)))
       round-rooms)))
 
+(defn apply-pull-ups [grouped-teams]
+  (if (every? even? (map (comp count second) grouped-teams))
+    grouped-teams
+    (loop [test-group (first grouped-teams)
+           next-group (second grouped-teams)
+           rest-groups (rest grouped-teams)
+           out []]
+      (if next-group
+        (if (-> test-group second count even?)
+          (recur next-group
+                 (first rest-groups)
+                 (rest rest-groups)
+                 (conj out test-group))
+          (recur (update next-group 1 rest)
+                 (first rest-groups)
+                 (rest rest-groups)
+                 (conj out (update test-group 1 conj (-> next-group second first)))))
+        out))))
+
+(defn team-id-keyword [team]
+  (-> team :_id str keyword))
+
+(defn group-teams [teams prev-round-data]
+  (->> teams
+       (map #(assoc % :total-points (team-points prev-round-data (team-id-keyword %))
+                      :total-speaks (team-speaks prev-round-data (team-id-keyword %))))
+       (sort-by :total-speaks >)
+       (group-by :total-points)
+       (sort-by first >)))
+
+(defn pair-teams [team-groups]
+  (->> team-groups
+       (mapcat (fn [[_ teams]]
+                 (let [[c1 c2] (split-at (/ (count teams) 2) teams)]
+                   (interleave c1 (reverse c2)))))
+       (partition 2)))
+
+(defn team-roles [prev-round-data teams]
+  (apply merge
+         (map #(into {}
+                     {(str (:_id %)) (->> % team-id-keyword (team-position-counts prev-round-data))})
+              teams)))
+
+(defn determine-roles [team-role-data]
+  (let [max-role (count team-role-data)]
+    (loop [out {}
+           teams team-role-data
+           current-role 1]
+      (if (<= current-role max-role)
+        (let [team-for-role (first (sort-by second (map #(into {} {(first %) (get (second %) current-role)}) teams)))]
+          (recur
+            (assoc out (first (first team-for-role)) current-role)
+            (dissoc teams (first (first team-for-role)))
+            (inc current-role)))
+        {:teams out}))))
+
+(defn assign-least-full-role [team-pairings prev-round-data]
+  (map (fn [teams]
+         (determine-roles (team-roles prev-round-data teams))) team-pairings))
+
+(defn bracket-teams [teams prev-round-data]
+  (-> teams
+      (group-teams prev-round-data)
+      apply-pull-ups
+      pair-teams
+      (assign-least-full-role prev-round-data)))
+
 (defn idify-teams [tmap]
-  (let [[t1 t2] (map (comp :_id first) (sort-by val tmap))]
-    {(str t1) 1
-     (str t2) 2}))
+  (if (string? (first (keys tmap)))
+    tmap
+    (let [teams (map (comp :_id first) (sort-by val tmap))]
+      (apply merge (map-indexed #(into {} {(str %2) (inc %1)}) teams)))))
 
 (defn idify [round-rooms]
   (map (fn [rr]
@@ -84,15 +152,17 @@
              (update :judges #(map :_id %))))
        round-rooms))
 
-(defn initial-pairings [teams judges rooms scratches]
-  (let [paired-teams (base-group-teams teams)]
+(defn pair-round [teams judges rooms scratches prev-round-data]
+  (let [paired-teams (if (not-empty prev-round-data)
+                       (bracket-teams teams prev-round-data)
+                       (map team-map (base-group-teams teams)))]
     (->> paired-teams
-         (map team-map)
          (room-assigner rooms)
-         (judge-looper (sort-by :rating > judges) scratches [])
+         (judge-looper (sort-by :rating > judges) scratches prev-round-data)
          idify)))
 
-(defn pair-round [teams judges rooms scratches prev-round-data]
-  (if (empty? prev-round-data)
-    (initial-pairings teams judges rooms scratches)
-    ))
+(defn pair-judges-only [judges rooms]
+  )
+
+(defn pair-teams-to-existing-rooms [teams scratches prev-round-data round-rooms]
+  )

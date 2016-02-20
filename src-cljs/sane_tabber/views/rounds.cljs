@@ -29,8 +29,18 @@
          {:type     "button"
           :on-click #(auto-pair-click _id status)}
          "Auto Pair"]
+        [:button.btn.btn-info.btn-xs.btn-flat
+         {:type     "button"
+          :disabled true
+          :on-click #(prn "TODO")}
+         "Auto Pair (JUDGES FIRST)"]
+        [:button.btn.btn-info.btn-xs.btn-flat
+         {:type     "button"
+          :disabled true
+          :on-click #(prn "TODO")}
+         "Auto Pair (ADD TEAMS)"]
         [:button.btn.btn-primary.btn-xs.btn-flat
-         {:type "button"
+         {:type     "button"
           :on-click #(dispatch! (str "#/" (session/get :tid) "/pairings/" _id))}
          "View Rooms"]
         [:button.btn.btn-danger.btn-xs.btn-flat

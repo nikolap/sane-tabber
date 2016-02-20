@@ -24,9 +24,6 @@
 (defn reset-page [token & [errors]]
   (layout/render "reset.html" {:errors errors :token token}))
 
-(defn legal-page []
-  (layout/render "legal.html"))
-
 (defn logout! [session]
   (log/info (:identity session) "has logged out")
   (assoc (ring-resp/redirect "/login") :session (assoc session :identity nil)))
@@ -98,9 +95,7 @@
            (GET "/register" [] (register-page))
            (GET "/forgot" [] (forgot-page))
            (GET "/reset-password" [token] (reset-page token))
-           (GET "/legal" [] (legal-page))
            (GET "/account" [] (println "awwww shite"))
-           (GET "/test" req nil)
            (GET "/logout" [session] (logout! session))
            (POST "/login" [username password session] (login! username password session))
            (POST "/register" {:keys [params session]} (register! params session))

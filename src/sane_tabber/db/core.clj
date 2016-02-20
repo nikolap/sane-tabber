@@ -190,14 +190,15 @@
                                  :tournament-id (object-id tid)})))
 
 (defn delete-round [rid]
-  (mc/remove-by-id @db "rounds" (object-id rid)))
+  (mc/remove-by-id @db "rounds" (object-id rid))
+  (mc/remove @db "round-rooms" {:round-id (object-id rid)}))
 
 (defn get-all-round-rooms [tid]
   (mc/find-maps @db "round-rooms" {:tournament-id (object-id tid)}))
 
 (defn get-all-scored-round-rooms [tid]
   (mc/find-maps @db "round-rooms" {:tournament-id (object-id tid)
-                                   :ballot {$exists true}}))
+                                   :ballot        {$exists true}}))
 
 (defn get-round-rooms [rid]
   (mc/find-maps @db "round-rooms" {:round-id (object-id rid)}))
@@ -209,7 +210,7 @@
   (get-by-tid "rooms" tid {:disabled? false}))
 
 (defn get-active-judges [tid]
-  (get-by-tid "judges" tid {:dropped? true}))
+  (get-by-tid "judges" tid {:signed-in? true}))
 
 (defn batch-insert-round-rooms [tid rid round-rooms]
   (batch-insert "round-rooms" (map #(assoc % :tournament-id (object-id tid)

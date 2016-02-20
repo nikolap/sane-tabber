@@ -16,7 +16,11 @@
   (-> file :tempfile slurp csv/read-csv rest))
 
 (defn upload-rooms [tournament-id rooms-file]
-  (let [data (->> rooms-file read-csv-file (map #(into {} {:name (first %) :tournament-id tournament-id})))]
+  (let [data (->> rooms-file read-csv-file (map #(into {}
+                                                       {:name          (first %)
+                                                        :tournament-id tournament-id
+                                                        :disabled?     false
+                                                        :accessible?   false})))]
     (db/batch-create-rooms data)))
 
 (defn upload-schools [tournament-id schools-file]
@@ -34,7 +38,9 @@
                   (map #(into {}
                               {:name          (first %)
                                :rating        (Integer/parseInt (second %))
-                               :tournament-id tournament-id})))]
+                               :tournament-id tournament-id
+                               :signed-in?    false
+                               :accesible?    false})))]
     (db/batch-create-judges data)))
 
 (defn school-id-by-code [schools code]
@@ -49,7 +55,9 @@
         teams-data (map #(into {}
                                {:team-code     (first %)
                                 :school-id     (school-id-by-code schools (second %))
-                                :tournament-id tournament-id}) raw-data)]
+                                :tournament-id tournament-id
+                                :signed-in?    false
+                                :accessible?   false}) raw-data)]
     (db/batch-create-teams teams-data)
     (let [teams (db/get-teams tournament-id)
           speaker-data (mapcat

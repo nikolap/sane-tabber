@@ -19,7 +19,7 @@
   (send-transit-toggle judge :accessible?))
 
 (defn update-dropped [judge]
-  (send-transit-toggle judge :dropped?))
+  (send-transit-toggle judge :signed-in?))
 
 (defn create-judge [judge]
   (ws/send-transit-msg! (update judge :rating js/parseInt) :judges))
@@ -35,7 +35,7 @@
    :name          (id-value :#new-name)
    :rating        (id-value :#new-rating)
    :accessible?   (id-checked :#new-accessible)
-   :dropped?      (id-checked :#new-disabled)})
+   :signed-in?    (id-checked :#new-disabled)})
 
 (defn submit-new-judge []
   (let [judge (new-judge-values)]

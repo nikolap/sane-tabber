@@ -39,7 +39,7 @@
     [:th "Accessible?"]
     [:th "Signed in?"]]
    [:tbody
-    (for [{:keys [_id name rating accessible? dropped?] :as judge} (sort-by :name judges)]
+    (for [{:keys [_id name rating accessible? signed-in?] :as judge} (sort-by :name judges)]
       ^{:key _id}
       [:tr
        [input-editor-cell judge :name update-name]
@@ -55,9 +55,9 @@
               :on-click #(update-accessible judge)}
              (if accessible? "Accessible" "Not Accessible")]]
        [:td [:button.btn.btn-xs.btn-flat.btn-block
-             {:class    (if dropped? "btn-primary" "btn-danger")
+             {:class    (if signed-in? "btn-primary" "btn-danger")
               :on-click #(update-dropped judge)}
-             (if dropped? "In Use" "Not In Use")]]])
+             (if signed-in? "In Use" "Not In Use")]]])
     [:tfooter
      [judge-table-footer]]]])
 

@@ -62,7 +62,7 @@
 (defn team-ballots-filter [team-id]
   (ballot-filter :teams team-id))
 
-(defn teams-ballot-filter [teams-id]
+(defn teams-ballots-filter [teams-id]
   (filter (fn [rd]
             (some (set (keys (:teams rd))) teams-id))))
 
@@ -92,8 +92,13 @@
 
 (defn judge-seen-teams [round-data judge-id teams-id]
   (count
-    (transduce (comp (teams-ballot-filter teams-id)
+    (transduce (comp (teams-ballots-filter teams-id)
                      (mapcat :judges)
                      (filter (partial = judge-id)))
                conj
                round-data)))
+
+(defn team-position-counts [round-data team-id]
+  (frequencies
+    (transduce (comp (team-ballots-filter team-id)
+                     (map #(get-in % [:teams team-id]))) conj round-data)))

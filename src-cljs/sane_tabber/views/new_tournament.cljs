@@ -14,7 +14,7 @@
    [:form#new-tournament-form
     {:enc-type "multipart/form-data"}
     [input-form-element "name" "text" "Tournament Name" true {:placeholder "The Best Tournament IV"} name]
-    [select-form-element "team-count" "Number of teams per round" [2 3 4]]
+    [select-form-element "team-count" "Number of teams per round" [2]] ; 3 4
     [select-form-element "speak-count" "Number of speakers per team" [1 2 3] {:value 2}]
     [input-form-element "rooms-file" "file" "Rooms CSV file" false {:accept "csv"} rooms-file]
     [input-form-element "schools-file" "file" "Schools CSV file" false {:accept "csv"} schools-file]

@@ -115,8 +115,7 @@
    :project/test  {:env {:test       true
                          :port       3001
                          :nrepl-port 7001}}
-   :project/prod  {:env        {:prod true
-                                :port 9080}
+   :project/prod  {:env        {:prod true}
                    :source-paths   ["env/prod/clj"]
                    :resource-paths ["env/prod/resources"]
                    :cljsbuild

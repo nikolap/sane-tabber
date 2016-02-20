@@ -56,5 +56,7 @@
 (defn submit-new-speaker []
   (if (clojure.string/blank? (id-value :#new-speaker-name))
     (js/alert "Please enter a name")
-    (create-speaker {:name          (id-value :#new-speaker-name)
-                     :tournament-id (session/get :tid)})))
+    (do
+      (create-speaker {:name          (id-value :#new-speaker-name)
+                      :tournament-id (session/get :tid)})
+      (dom/set-value! (id-value :#new-speaker-name) nil))))

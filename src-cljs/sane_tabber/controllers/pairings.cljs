@@ -15,7 +15,7 @@
 
 (defn unused-judges [judges round-rooms & [id]]
   (filter #(or (and (not (contains? (set (mapcat :judges round-rooms)) (:_id %)))
-                    (:dropped? %))
+                    (:signed-in? %))
                (= (:_id %) id)) judges))
 
 (defn unused-teams [teams round-rooms & [id]]
