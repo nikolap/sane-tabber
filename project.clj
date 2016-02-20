@@ -116,7 +116,7 @@
                          :port       3001
                          :nrepl-port 7001}}
    :project/prod  {:env        {:prod true
-                                :port 80}
+                                :port 9080}
                    :cljsbuild
                                {:builds
                                 {:app
