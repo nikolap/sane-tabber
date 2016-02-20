@@ -1,6 +1,6 @@
 (ns sane-tabber.controllers.ballots
   (:require [reagent.session :as session]
-    [sane-tabber.utils :refer [event-value]]
+            [sane-tabber.utils :refer [event-value]]
             [sane-tabber.websockets :as ws]
             [sane-tabber.session :refer [app-state]]
             [sane-tabber.controllers.generic :refer [basic-get]]
@@ -16,4 +16,9 @@
       (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" (session/get :tid) "/" rid "/round-rooms") update-round-rooms! :round-rooms))))
 
 (defn submit-ballot! [round-room ballot-data]
-  (ws/send-transit-msg! (assoc round-room :ballot ballot-data) :round-rooms))
+  (ws/send-transit-msg! (assoc round-room :ballot ballot-data) :round-rooms)
+  (.modal (js/$ "#ballot-modal") "hide")
+  (swap! app-state assoc :active-scores {} :active-round-room nil))
+
+(defn clear-ballot! [round-room]
+  (ws/send-transit-msg! (assoc round-room :ballot nil) :round-rooms))

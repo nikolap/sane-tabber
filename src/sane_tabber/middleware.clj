@@ -79,10 +79,12 @@
         (wrap-authorization backend))))
 
 (defn wrap-ssl [handler]
-  (-> handler
-      wrap-hsts
-      wrap-ssl-redirect
-      wrap-forwarded-scheme))
+  (if (environ.core/env :dev)
+    handler
+    (-> handler
+        wrap-hsts
+        wrap-ssl-redirect
+        wrap-forwarded-scheme)))
 
 (defn wrap-base [handler]
   (-> ((:middleware defaults) handler)
@@ -96,6 +98,6 @@
             (assoc-in [:security :anti-forgery] false)
             (dissoc :session)))
       wrap-context
-      ;wrap-ssl
+      wrap-ssl
       wrap-internal-error
       wrap-multipart-params))

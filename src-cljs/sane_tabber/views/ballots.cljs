@@ -1,9 +1,8 @@
 (ns sane-tabber.views.ballots
-  (:require [reagent.core :as reagent]
-            [sane-tabber.utils :refer [event-value index-of]]
+  (:require [sane-tabber.utils :refer [event-value index-of duplicates?]]
             [sane-tabber.session :refer [app-state get-by-id get-multi]]
             [sane-tabber.views.pairings :refer [team-name]]
-            [sane-tabber.controllers.ballots :refer [on-change-round! submit-ballot!]]))
+            [sane-tabber.controllers.ballots :refer [on-change-round! submit-ballot! clear-ballot!]]))
 
 (defn round-selection [{:keys [rounds active-round]}]
   [:div.form-group.col-sm-4.col-sm-offset-8
@@ -30,7 +29,7 @@
     [:th "Actions"]]
    [:tbody
     (doall
-      (for [{:keys [_id room judges teams ballot]} round-rooms
+      (for [{:keys [_id room judges teams ballot] :as rr} round-rooms
             :let [room (get-by-id :rooms room :_id)
                   rr-teams (map #(get-by-id :teams (name (first %)) :_id) (sort-by val teams))
                   rr-judges (clojure.string/join " || " (map #(:name (get-by-id :judges % :_id)) judges))]]
@@ -45,7 +44,10 @@
          [:td (if ballot [:span.badge.bg-green "Ballot entered"] [:span.badge.bg-red "No ballot"])]
          [:td
           (if ballot
-            [:button.btn.btn-danger.btn-xs "Clear Ballot"]
+            [:button.btn.btn-danger.btn-xs
+             {:type "button"
+              :on-click #(clear-ballot! rr)}
+             "Clear Ballot"]
             [:button.btn.btn-success.btn-xs
              {:data-toggle "modal"
               :data-target "#ballot-modal"
@@ -55,10 +57,10 @@
 (defn get-team-score [active-scores team-id]
   (apply + (vals (get active-scores team-id))))
 
-(defn get-team-rank [active-scores team-id]
+(defn get-team-points [active-scores team-id]
   (index-of (map first (sort-by #(apply + (second %)) > active-scores)) team-id))
 
-(defn ballot-modal [{:keys [active-round-room active-scores]}]
+(defn ballot-modal [{:keys [tournament active-round-room active-scores]}]
   [:div#ballot-modal.modal.fade>div.modal-dialog>div.modal-content
    [:div
     [:div.modal-header
@@ -98,9 +100,6 @@
               [:input.form-control.input-sm
                {:value    (get-team-score active-scores _id)
                 :disabled true}]]]))]
-       ;{:teams    {:id {:points n
-       ;                 :score  n}}
-       ;            :speakers {:id score}
        [:div.modal-footer
         [:button.btn.btn-default.pull-left
          {:data-dismiss "modal"
@@ -109,19 +108,18 @@
         [:button.btn.btn-primary
          {:type     "button"
           :on-click (fn []
-                      (prn {:teams    (apply merge
-                                             (map #(let [team-id (:_id %)]
-                                                    {team-id {:rank  (get-team-rank active-scores team-id)
-                                                              :score (get-team-score active-scores team-id)}})
-                                                  rr-teams))
-                            :speakers {}})
-                      #_(submit-ballot! round-room
-                                        {:teams    (apply merge
-                                                          (map #(let [team-id (:_id %)]
-                                                                 {team-id {:point (get-team-rank active-scores team-id)
-                                                                           :score (get-team-score active-scores team-id)}})
-                                                               rr-teams))
-                                         :speakers {}}))} "Submit Ballot"]]])]])
+                      (cond
+                        (not= (count (mapcat vals (vals active-scores)))
+                              (* (:team-count tournament) (:speak-count tournament))) (js/alert "Please enter ALL speakers scores")
+                        (duplicates? (map (comp (partial apply +) vals) (vals active-scores))) (js/alert "Please ensure there are no ties")
+                        :else (submit-ballot! round-room
+                                              {:teams    (apply merge
+                                                                (map #(let [team-id (:_id %)]
+                                                                       {team-id {:points (get-team-points active-scores team-id)
+                                                                                 :score  (get-team-score active-scores team-id)}})
+                                                                     rr-teams))
+                                               :speakers (apply merge (vals active-scores))})))}
+         "Submit Ballot"]]])]])
 
 (defn ballots-page []
   [:section.content>div.row
