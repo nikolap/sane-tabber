@@ -52,67 +52,82 @@
    {:app
     {:source-paths ["src-cljs"]
      :compiler
-     {:output-to "target/cljsbuild/public/js/app.js"
-      :output-dir "target/cljsbuild/public/js/out"
-      :externs ["react/externs/react.js"]
-      :pretty-print true}}}}
-  
+                   {:output-to    "target/cljsbuild/public/js/app.js"
+                    :output-dir   "target/cljsbuild/public/js/out"
+                    :externs      ["react/externs/react.js"]
+                    :pretty-print true}}}}
+
   :profiles
-  {:uberjar {:omit-source true
-             :env {:production true}
-              :prep-tasks ["compile" ["cljsbuild" "once"]]
-              :cljsbuild
-              {:builds
-               {:app
-                {:source-paths ["env/prod/cljs"]
-                 :compiler
-                 {:optimizations :advanced
-                  :pretty-print false
-                  :closure-warnings
-                  {:externs-validation :off :non-standard-jsdoc :off}}}}} 
-             
-             :aot :all
-             :source-paths ["env/prod/clj"]
-             :resource-paths ["env/prod/resources"]}
+  {:uberjar       {:omit-source    true
+                   :env            {:production true}
+                   :prep-tasks     ["compile" ["cljsbuild" "once"]]
+                   :cljsbuild
+                                   {:builds
+                                    {:app
+                                     {:source-paths ["env/prod/cljs"]
+                                      :compiler
+                                                    {:optimizations :advanced
+                                                     :pretty-print  false
+                                                     :closure-warnings
+                                                                    {:externs-validation :off :non-standard-jsdoc :off}}}}}
+
+                   :aot            :all
+                   :source-paths   ["env/prod/clj"]
+                   :resource-paths ["env/prod/resources"]}
    :dev           [:project/dev :profiles/dev]
    :test          [:project/test :profiles/test]
-   :project/dev  {:dependencies [[prone "1.0.1"]
-                                 [ring/ring-mock "0.3.0"]
-                                 [ring/ring-devel "1.4.0"]
-                                 [pjstadig/humane-test-output "0.7.1"]
-                                 [lein-figwheel "0.5.0-3"]
-                                 [com.cemerick/piggieback "0.2.2-SNAPSHOT"]
-                                 [org.clojure/tools.namespace "0.3.0-alpha3"]]
-                  :plugins [[lein-figwheel "0.5.0-3"] [org.clojure/clojurescript "1.7.228"]]
+   :prd           [:project/prod :profiles/prod]
+   :project/dev   {:dependencies   [[prone "1.0.1"]
+                                    [ring/ring-mock "0.3.0"]
+                                    [ring/ring-devel "1.4.0"]
+                                    [pjstadig/humane-test-output "0.7.1"]
+                                    [lein-figwheel "0.5.0-3"]
+                                    [com.cemerick/piggieback "0.2.2-SNAPSHOT"]
+                                    [org.clojure/tools.namespace "0.3.0-alpha3"]]
+                   :plugins        [[lein-figwheel "0.5.0-3"] [org.clojure/clojurescript "1.7.228"]]
                    :cljsbuild
-                   {:builds
-                    {:app
-                     {:source-paths ["env/dev/cljs"]
-                      :compiler
-                      {:main "sane-tabber.app"
-                       :asset-path "/js/out"
-                       :optimizations :none
-                       :source-map true}}}} 
-                  
-                  :figwheel
-                  {:http-server-root "public"
-                   :server-port 3449
-                   :nrepl-port 7002
-                   :nrepl-middleware ["cemerick.piggieback/wrap-cljs-repl"]
-                   :css-dirs ["resources/public/css"]
-                   :ring-handler sane-tabber.handler/app}
-                  
-                  :source-paths ["env/dev/clj"]
-                  :resource-paths ["env/dev/resources"]
-                  :repl-options {:init-ns user}
-                  :injections [(require 'pjstadig.humane-test-output)
-                               (pjstadig.humane-test-output/activate!)]
-                  ;;when :nrepl-port is set the application starts the nREPL server on load
-                  :env {:dev        true
-                        :port       3000
-                        :nrepl-port 7000}}
-   :project/test {:env {:test       true
-                        :port       3001
-                        :nrepl-port 7001}}
-   :profiles/dev {}
-   :profiles/test {}})
+                                   {:builds
+                                    {:app
+                                     {:source-paths ["env/dev/cljs"]
+                                      :compiler
+                                                    {:main          "sane-tabber.app"
+                                                     :asset-path    "/js/out"
+                                                     :optimizations :none
+                                                     :source-map    true}}}}
+
+                   :figwheel
+                                   {:http-server-root "public"
+                                    :server-port      3449
+                                    :nrepl-port       7002
+                                    :nrepl-middleware ["cemerick.piggieback/wrap-cljs-repl"]
+                                    :css-dirs         ["resources/public/css"]
+                                    :ring-handler     sane-tabber.handler/app}
+
+                   :source-paths   ["env/dev/clj"]
+                   :resource-paths ["env/dev/resources"]
+                   :repl-options   {:init-ns user}
+                   :injections     [(require 'pjstadig.humane-test-output)
+                                    (pjstadig.humane-test-output/activate!)]
+                   ;;when :nrepl-port is set the application starts the nREPL server on load
+                   :env            {:dev        true
+                                    :port       3000
+                                    :nrepl-port 7000}}
+   :project/test  {:env {:test       true
+                         :port       3001
+                         :nrepl-port 7001}}
+   :project/prod  {:env        {:prod true
+                                :port 80}
+                   :cljsbuild
+                               {:builds
+                                {:app
+                                 {:source-paths ["env/prod/cljs"]
+                                  :compiler
+                                                {:optimizations :advanced
+                                                 :pretty-print  false
+                                                 :closure-warnings {:externs-validation :off
+                                                                    :non-standard-jsdoc :off}}}}}
+                   :prep-tasks ["clean"
+                                "compile" ["cljsbuild" "once"]]}
+   :profiles/dev  {}
+   :profiles/test {}
+   :profiles/prod {}})
