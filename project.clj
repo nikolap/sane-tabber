@@ -76,7 +76,7 @@
                    :resource-paths ["env/prod/resources"]}
    :dev           [:project/dev :profiles/dev]
    :test          [:project/test :profiles/test]
-   :prd           [:project/prod :profiles/prod]
+   :prod          [:project/prod :profiles/prod]
    :project/dev   {:dependencies   [[prone "1.0.1"]
                                     [ring/ring-mock "0.3.0"]
                                     [ring/ring-devel "1.4.0"]
@@ -122,8 +122,8 @@
                                 {:app
                                  {:source-paths ["env/prod/cljs"]
                                   :compiler
-                                                {:optimizations :advanced
-                                                 :pretty-print  false
+                                                {:optimizations    :advanced
+                                                 :pretty-print     false
                                                  :closure-warnings {:externs-validation :off
                                                                     :non-standard-jsdoc :off}}}}}
                    :prep-tasks ["clean"
