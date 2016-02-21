@@ -19,13 +19,22 @@
              :handler         #(remove-item! :rounds round)
              :error-handler   error-handler})))
 
-(defn auto-pair-round [round-id]
-  (POST (str "/ajax/tournaments/" (session/get :tid) "/rounds/" round-id "/autopair")
+(defn auto-pair-post [uri round-id]
+  (POST uri
         {:headers         {:x-csrf-token (id-value :#__anti-forgery-token)}
          :handler         #(dispatch! (str "#/" (session/get :tid) "/pairings/" round-id))
          :error-handler   error-handler}))
 
-(defn auto-pair-click [round-id status]
+(defn auto-pair-round [round-id]
+  (auto-pair-post (str "/ajax/tournaments/" (session/get :tid) "/rounds/" round-id "/autopairgofuckyourself") round-id))
+
+(defn auto-pair-judges [round-id]
+  (auto-pair-post (str "/ajax/tournaments/" (session/get :tid) "/rounds/" round-id "/autopair-judges-first") round-id))
+
+(defn auto-pair-teams [round-id]
+  (auto-pair-post (str "/ajax/tournaments/" (session/get :tid) "/rounds/" round-id "/autopair-teams-existing") round-id))
+
+(defn auto-pair-click [round-id status autopair-fn]
   (if (or (not status)
-          (js/confirm "Are you sure you wish to autopair the round? This round appears to already be paired or complete."))
-    (auto-pair-round round-id)))
+          (js/confirm "Are you sure you wish to autopair the round? This round appears to already be paired."))
+    (autopair-fn round-id)))

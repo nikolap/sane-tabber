@@ -2,7 +2,8 @@
   (:require [reagent.session :as session]
             [sane-tabber.session :refer [app-state]]
             [sane-tabber.utils :refer [dispatch!]]
-            [sane-tabber.controllers.rounds :refer [create-round! delete-round! auto-pair-round auto-pair-click]]))
+            [sane-tabber.controllers.rounds :refer [create-round! delete-round! auto-pair-round auto-pair-judges
+                                                    auto-pair-teams auto-pair-click]]))
 
 ;; show status -- whether round is paired? Is it tabbed (scores entered)?
 ; automatically pair
@@ -21,23 +22,22 @@
        [:td round-number]
        [:td
         (case status
-          "paired" [:span.badge.bg-yellow "Paired"]
-          "complete" [:span.badge.bg-green "Complete"]
+          "partial" [:span.badge.bg-yellow "Partially paired"]
+          "paired" [:span.badge.bg-green "Paried"]
           [:span.badge.bg-red "Unpaired"])]
        [:td>div.btn-group
         [:button.btn.btn-success.btn-xs.btn-flat
          {:type     "button"
-          :on-click #(auto-pair-click _id status)}
+          :on-click #(auto-pair-click _id status auto-pair-round)}
          "Auto Pair"]
         [:button.btn.btn-info.btn-xs.btn-flat
          {:type     "button"
-          :disabled true
-          :on-click #(prn "TODO")}
+          :on-click #(auto-pair-click _id status auto-pair-judges)}
          "Auto Pair (JUDGES FIRST)"]
         [:button.btn.btn-info.btn-xs.btn-flat
          {:type     "button"
           :disabled true
-          :on-click #(prn "TODO")}
+          :on-click #(auto-pair-click _id status auto-pair-teams)}
          "Auto Pair (ADD TEAMS)"]
         [:button.btn.btn-primary.btn-xs.btn-flat
          {:type     "button"

@@ -7,7 +7,7 @@
             [sane-tabber.layout :as layout]
             [sane-tabber.db.core :as db]
             [sane-tabber.utils :refer [stringify-reduce stringify-map wrap-transit-resp]]
-            [sane-tabber.pairings :refer [pair-round]]))
+            [sane-tabber.pairings :refer [pair-round pair-judges-only]]))
 
 (defn app-page []
   (layout/render "home.html"))
@@ -152,6 +152,21 @@
     (db/update-round (assoc round :status "paired"))
     "success"))
 
+(defn autopair-judges-only [tid rid]
+  (log/info "Autopairing judges only for tournament" tid "and round" rid)
+  (db/clear-round-room-data rid)
+  (let [teams (db/get-active-teams tid)
+        judges (db/get-active-judges tid)
+        rooms (db/get-active-rooms tid)
+        tournament (db/get-tournament tid)
+        round (db/get-round rid)]
+    (db/batch-insert-round-rooms tid rid (pair-judges-only judges rooms (count teams) (:team-count tournament)))
+    (db/update-round (assoc round :status "partial"))
+    "success"))
+
+(defn autopair-teams-to-existing [tid rid]
+  )
+
 (defn delete-round [rid]
   (db/delete-round rid)
   "success")
@@ -176,5 +191,7 @@
              (DELETE "/delete" [] (delete-tournament tid))
              (POST "/rounds/new" [] (create-round tid))
              (POST "/rounds/:rid/autopair" [rid] (autopair-round tid rid))
+             (POST "/rounds/:rid/autopair-judges-first" [rid] (autopair-judges-only tid rid))
+             (POST "/rounds/:rid/autopair-teams-existing" [rid] (autopair-round tid rid)) ; todo
              (DELETE "/rounds/:rid" [rid] (delete-round rid))))
 

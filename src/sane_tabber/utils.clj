@@ -34,3 +34,5 @@
 
 (defn max-inc [coll]
   (if (empty? coll) 1 (inc (apply max coll))))
+
+(def filter-first (comp first filter))

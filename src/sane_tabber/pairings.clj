@@ -1,12 +1,16 @@
 (ns sane-tabber.pairings
-  (:require [sane-tabber.statistics :refer [judge-seen-teams team-points team-speaks team-position-counts]]))
+  (:require [sane-tabber.statistics :refer [judge-seen-teams team-points team-speaks team-position-counts]]
+            [sane-tabber.utils :refer [filter-first]]))
 
-;; ----Potential logic for auto-pairing----
+;; ----Logic for complete auto-pairing----
 ;; 1. pair teams based off of score
 ;; 2. assign position based off of least full position usage
-;; 3. assign rooms based off of accessible vs not accessible [x]
-;; 4. assign judges based off of rating (high judge rating = high rooms). Accessible judges in accessible rooms [x]
-;; 5. prioritize minimizing judges seeing the same teams repeatedly [x]
+;; 3. assign rooms based off of accessible vs not accessible
+;; 4. assign judges based off of rating (high judge rating = high rooms). Accessible judges in accessible rooms
+;; 5. prioritize minimizing judges seeing the same teams repeatedly
+
+;; Note: autopairing in alternative order also exists (i.e. judges first, then teams). This allows for the ability
+;; of organizers to give judges rooms at the start of the day
 
 (defn base-group-teams [teams]
   (->> teams
@@ -161,8 +165,45 @@
          (judge-looper (sort-by :rating > judges) scratches prev-round-data)
          idify)))
 
-(defn pair-judges-only [judges rooms]
+(defn get-by-id [coll id k]
+  (filter-first #(= (get % k) id) coll))
+
+(defn pair-judges-only [judges rooms team-count teams-per-room]
+  (prn team-count teams-per-room)
+  (let [room-count (int (/ (count judges) (int (/ team-count teams-per-room))))
+        sorted-rooms (reverse (sort-by :accessible? rooms))
+        judge-groupings (reverse (sort-by #(some true? (map :accessible %))
+                                          (partition room-count (sort-by :rating judges))))]
+    (map (fn [judges room]
+           {:room   (:_id room)
+            :judges (map :_id judges)}) judge-groupings sorted-rooms)))
+
+#_(defn rr-judge-filter [round-rooms scratches judge]
+  (let [scratch (:team-id (filter #(= (:judge-id %) (:_id judge)) scratches))]
+    (filter (partial rr-filter scratch judge) round-rooms)))
+(defn no-scratches? [{:keys [judges]} teams scratches]
   )
 
-(defn pair-teams-to-existing-rooms [teams scratches prev-round-data round-rooms]
+(defn assign-teams-round-room [round-rooms rooms scratches team-group prev-round-data]
+  (let [accessible? (teams-accessible? team-group)
+        possible-rooms (filter #(and (not (:teams %))
+                                     (if accessible?
+                                       (:accessible? (get-by-id rooms (:room %) :_id))
+                                       true)
+                                     (no-scratches? % (keys (:teams team-group)) scratches))
+                               round-rooms)]
+    )
+  ; sort by judge-team counts, take min and put teams there
   )
+
+(defn team-looper [team-groups rooms scratches prev-round-data round-rooms]
+  (loop [round-rooms round-rooms
+         team-group (first team-groups)
+         team-groups (rest team-groups)]
+    (if team-group
+      (let [rr (assign-teams-round-room round-rooms rooms scratches team-group prev-round-data)]
+        (recur (update-rr round-rooms rr (assoc rr :teams conj team-group)) (first team-groups) (rest team-groups)))
+      round-rooms)))
+
+(defn pair-teams-to-existing-rooms [teams scratches prev-round-data round-rooms]
+  (let [paired-teams (bracket-teams teams prev-round-data)]))

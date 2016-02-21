@@ -20,7 +20,7 @@
 (defn teams-select [new? teams & [params]]
   [:select
    (merge {:class (str (if new? "new-team-select" "team-select") " form-control input-sm")} params)
-   (when new? [:option nil])
+   (if new? [:option nil] [:option {:disabled true :selected true} "-- select an option -- "])
    (for [{:keys [_id] :as team} teams]
      ^{:key _id}
      [:option {:value _id} (team-name team)])])
@@ -87,7 +87,7 @@
      [:tbody
       (for [{:keys [_id room judges teams] :as rr} round-rooms
             :let [room (get-by-id :rooms room :_id)
-                  rr-teams (map #(get-by-id :teams (name (first %)) :_id) (sort-by val teams))
+                  rr-teams (when teams (map #(get-by-id :teams (name (first %)) :_id) (sort-by val teams)))
                   rr-judges (map #(get-by-id :judges % :_id) judges)]]
         ^{:key _id}
         [:tr
