@@ -117,6 +117,7 @@
              [:i.fa.fa-plus]]])])
       [pairings-footer tournament round-rooms rooms all-teams all-judges]])])
 
+;; todo: export pairings to spreadsheet
 (defn pairings-page []
   [:section.content>div.row
    [:div.col-sm-8

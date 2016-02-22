@@ -16,9 +16,12 @@
             [sane-tabber.views.rounds :refer [rounds-page]]
             [sane-tabber.views.pairings :refer [pairings-page]]
             [sane-tabber.views.ballots :refer [ballots-page]]
+            [sane-tabber.views.reporting :refer [reporting-page]]
             [sane-tabber.views.editors.rooms :refer [rooms-editor-page]]
             [sane-tabber.views.editors.judges :refer [judges-editor-page]]
-            [sane-tabber.views.editors.teams :refer [teams-editor-page]]))
+            [sane-tabber.views.editors.teams :refer [teams-editor-page]]
+            [sane-tabber.views.editors.schools :refer [schools-editor-page]]
+            [sane-tabber.views.settings :refer [settings-page]]))
 
 (secretary/set-config! :prefix "#")
 
@@ -30,9 +33,12 @@
    :rounds         #'rounds-page
    :pairings       #'pairings-page
    :ballots        #'ballots-page
+   :reporting      #'reporting-page
    :room-editor    #'rooms-editor-page
    :judge-editor   #'judges-editor-page
-   :team-editor    #'teams-editor-page})
+   :team-editor    #'teams-editor-page
+   :school-editor  #'schools-editor-page
+   :settings       #'settings-page})
 
 (defn page []
   [(pages (session/get :page))])
@@ -86,6 +92,9 @@
                     (basic-get (str "/ajax/tournaments/" tid "/rounds") :rounds)
                     (basic-get (str "/ajax/tournaments/" tid "/speakers") :speakers)
                     (session/put! :page :ballots))
+(secretary/defroute "/:tid/reporting" [tid]
+                    (session/put! :tid tid)
+                    (session/put! :page :reporting))
 (secretary/defroute "/:tid/editor/rooms" [tid]
                     (session/put! :tid tid)
                     (basic-get (str "/ajax/tournaments/" tid "/rooms") :rooms)
@@ -109,3 +118,9 @@
                     (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/teams") update-teams! :teams)
                     (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/speakers") update-speakers! :speakers)
                     (session/put! :page :team-editor))
+(secretary/defroute "/:tid/editor/schools" [tid]
+                    (session/put! :tid tid)
+                    (session/put! :page :school-editor))
+(secretary/defroute "/:tid/settings" [tid]
+                    (session/put! :tid tid)
+                    (session/put! :page :settings))

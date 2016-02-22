@@ -11,7 +11,7 @@
     {:on-change on-change-round!
      :value     active-round}
     [:option nil]
-    (for [{:keys [_id round-number]} rounds]
+    (for [{:keys [_id round-number]} (filter #(= "paired" (:status %)) rounds)]
       ^{:key _id}
       [:option {:value _id} round-number])]])
 
@@ -108,6 +108,7 @@
           :on-click #(submit-ballot! active-scores tournament round-room rr-teams)}
          "Submit Ballot"]]])]])
 
+;; todo: exporting
 (defn ballots-page []
   [:section.content>div.row
    [:div.col-sm-12
