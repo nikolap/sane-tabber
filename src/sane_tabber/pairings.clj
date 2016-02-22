@@ -46,6 +46,7 @@
              (get-in round-room [:room :accessible?])))
     (not (contains? (set (team-ids round-room)) scratch-team-id))))
 
+;; possibly revisit this? something seems fishy
 (defn rr-judge-filter [round-rooms scratches judge]
   (let [scratch (:team-id (filter #(= (:judge-id %) (:_id judge)) scratches))]
     (filter (partial rr-filter scratch judge) round-rooms)))
@@ -82,14 +83,14 @@
            next-group (second grouped-teams)
            rest-groups (rest grouped-teams)
            out []]
-      (if next-group
+      (if (not-empty (second next-group))
         (if (-> test-group second count even?)
           (recur next-group
-                 (first rest-groups)
+                 (second rest-groups)
                  (rest rest-groups)
                  (conj out test-group))
           (recur (update next-group 1 rest)
-                 (first rest-groups)
+                 (second rest-groups)
                  (rest rest-groups)
                  (conj out (update test-group 1 conj (-> next-group second first)))))
         out))))
@@ -169,7 +170,6 @@
   (filter-first #(= (get % k) id) coll))
 
 (defn pair-judges-only [judges rooms team-count teams-per-room]
-  (prn team-count teams-per-room)
   (let [room-count (int (/ (count judges) (int (/ team-count teams-per-room))))
         sorted-rooms (reverse (sort-by :accessible? rooms))
         judge-groupings (reverse (sort-by #(some true? (map :accessible %))
@@ -178,23 +178,27 @@
            {:room   (:_id room)
             :judges (map :_id judges)}) judge-groupings sorted-rooms)))
 
-#_(defn rr-judge-filter [round-rooms scratches judge]
-  (let [scratch (:team-id (filter #(= (:judge-id %) (:_id judge)) scratches))]
-    (filter (partial rr-filter scratch judge) round-rooms)))
 (defn no-scratches? [{:keys [judges]} teams scratches]
-  )
+  (not
+    (some true?
+          (map #(and (contains? (set judges) (:judge-id %))
+                     (contains? (set teams) (str (:team-id %)))) scratches))))
 
+; transducify?
 (defn assign-teams-round-room [round-rooms rooms scratches team-group prev-round-data]
-  (let [accessible? (teams-accessible? team-group)
-        possible-rooms (filter #(and (not (:teams %))
-                                     (if accessible?
-                                       (:accessible? (get-by-id rooms (:room %) :_id))
-                                       true)
-                                     (no-scratches? % (keys (:teams team-group)) scratches))
-                               round-rooms)]
-    )
-  ; sort by judge-team counts, take min and put teams there
-  )
+  (let [team-ids (keys (:teams team-group))]
+    (dissoc
+      (->> round-rooms
+           (filter #(and (empty? (:teams %))
+                         (if (teams-accessible? team-group)
+                           (:accessible? (get-by-id rooms (:room %) :_id))
+                           true)
+                         (no-scratches? % team-ids scratches)))
+           (map #(assoc % :judge-seen-count
+                          (judge-seen-teams prev-round-data (:judges %) team-ids)))
+           (sort-by :judge-seen-count)
+           first)
+      :judge-seen-count)))
 
 (defn team-looper [team-groups rooms scratches prev-round-data round-rooms]
   (loop [round-rooms round-rooms
@@ -202,8 +206,8 @@
          team-groups (rest team-groups)]
     (if team-group
       (let [rr (assign-teams-round-room round-rooms rooms scratches team-group prev-round-data)]
-        (recur (update-rr round-rooms rr (assoc rr :teams conj team-group)) (first team-groups) (rest team-groups)))
+        (recur (update-rr round-rooms rr (merge rr team-group)) (first team-groups) (rest team-groups)))
       round-rooms)))
 
-(defn pair-teams-to-existing-rooms [teams scratches prev-round-data round-rooms]
-  (let [paired-teams (bracket-teams teams prev-round-data)]))
+(defn pair-teams-to-existing-rooms [teams rooms scratches prev-round-data round-rooms]
+  (team-looper (bracket-teams teams prev-round-data) rooms scratches prev-round-data round-rooms))

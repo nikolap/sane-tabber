@@ -26,7 +26,7 @@
          :error-handler   error-handler}))
 
 (defn auto-pair-round [round-id]
-  (auto-pair-post (str "/ajax/tournaments/" (session/get :tid) "/rounds/" round-id "/autopairgofuckyourself") round-id))
+  (auto-pair-post (str "/ajax/tournaments/" (session/get :tid) "/rounds/" round-id "/autopair") round-id))
 
 (defn auto-pair-judges [round-id]
   (auto-pair-post (str "/ajax/tournaments/" (session/get :tid) "/rounds/" round-id "/autopair-judges-first") round-id))
@@ -35,6 +35,6 @@
   (auto-pair-post (str "/ajax/tournaments/" (session/get :tid) "/rounds/" round-id "/autopair-teams-existing") round-id))
 
 (defn auto-pair-click [round-id status autopair-fn]
-  (if (or (not status)
+  (if (or (not= "paired" status)
           (js/confirm "Are you sure you wish to autopair the round? This round appears to already be paired."))
     (autopair-fn round-id)))

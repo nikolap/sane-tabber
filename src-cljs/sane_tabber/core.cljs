@@ -5,6 +5,7 @@
             [goog.history.EventType :as EventType]
             [ajax.core :refer [GET POST]]
             [sane-tabber.routes :refer [page]]
+            [sane-tabber.session :refer [app-state]]
             [sane-tabber.websockets :as ws]
             [sane-tabber.views.navigation :refer [sidebar]])
   (:import goog.History))
@@ -14,6 +15,7 @@
     (events/listen
       EventType/NAVIGATE
       (fn [event]
+        (reset! app-state nil)
         (ws/reset-channels!)
         (secretary/dispatch! (.-token event))))
     (.setEnabled true)))

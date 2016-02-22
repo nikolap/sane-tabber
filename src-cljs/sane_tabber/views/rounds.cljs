@@ -5,10 +5,6 @@
             [sane-tabber.controllers.rounds :refer [create-round! delete-round! auto-pair-round auto-pair-judges
                                                     auto-pair-teams auto-pair-click]]))
 
-;; show status -- whether round is paired? Is it tabbed (scores entered)?
-; automatically pair
-; manually pair
-
 (defn rounds-table [{:keys [rounds]}]
   [:table.table.table-striped.table-condensed.table-hover
    [:thead>tr
@@ -36,7 +32,6 @@
          "Auto Pair (JUDGES FIRST)"]
         [:button.btn.btn-info.btn-xs.btn-flat
          {:type     "button"
-          :disabled true
           :on-click #(auto-pair-click _id status auto-pair-teams)}
          "Auto Pair (ADD TEAMS)"]
         [:button.btn.btn-primary.btn-xs.btn-flat

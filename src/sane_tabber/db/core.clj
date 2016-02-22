@@ -228,3 +228,7 @@
 (defn update-round-room [round-room]
   (let [round-room (object-idify round-room [:_id :tournament-id :round-id :room :judges])]
     (mc/update-by-id @db "round-rooms" (:_id round-room) {$set round-room})))
+
+(defn reinsert-round-rooms [tid rid round-rooms]
+  (clear-round-room-data rid)
+  (batch-insert-round-rooms tid rid round-rooms))
