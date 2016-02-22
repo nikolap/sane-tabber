@@ -15,7 +15,7 @@
     (events/listen
       EventType/NAVIGATE
       (fn [event]
-        (reset! app-state nil)
+        (reset! app-state {})
         (ws/reset-channels!)
         (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
