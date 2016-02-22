@@ -3,7 +3,7 @@
             [ring.util.http-response :refer [content-type ok]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
-            [environ.core :refer [env]]))
+            [config.core :refer [env]]))
 
 (declare ^:dynamic *identity*)
 (declare ^:dynamic *app-context*)

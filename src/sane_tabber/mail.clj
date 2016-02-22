@@ -1,6 +1,6 @@
 (ns sane-tabber.mail
   (:require [clojurewerkz.mailer.core :refer [*delivery-settings* deliver-email]]
-            [environ.core :refer [env]]))
+            [config.core :refer [env]]))
 
 (defn settings! [m]
   (alter-var-root (var *delivery-settings*) (constantly m)))

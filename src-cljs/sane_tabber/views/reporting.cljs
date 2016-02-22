@@ -8,7 +8,7 @@
      [:div.box-body
       [:button.btn.btn-primary.btn-flat.btn-block "Team Tab"]
       [:button.btn.btn-primary.btn-flat.btn-block "Speaker Tab"]
-      [:button.btn.btn-primary.btn-flat.btn-block "Team Stats/Info"]
+      [:button.btn.btn-primary.btn-flat.btn-block "Team Position Info"]
       [:button.btn.btn-primary.btn-flat.btn-block.disabled "Teams"]
       [:button.btn.btn-primary.btn-flat.btn-block.disabled "Judges"]
       [:button.btn.btn-primary.btn-flat.btn-block.disabled "Speakers"]

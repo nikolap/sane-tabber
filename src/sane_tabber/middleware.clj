@@ -79,7 +79,7 @@
         (wrap-authorization backend))))
 
 (defn wrap-ssl [handler]
-  (if (environ.core/env :dev)
+  (if (env :dev)
     handler
     (-> handler
         wrap-hsts

@@ -3,7 +3,7 @@
             [monger.collection :as mc]
             [monger.operators :refer :all]
             [monger.conversion :as conversion]
-            [environ.core :refer [env]]
+            [config.core :refer [env]]
             [buddy.hashers :as hashers]
             [buddy.core.hash :refer [sha256]]
             [buddy.core.codecs :refer [bytes->hex]]
