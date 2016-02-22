@@ -1,4 +1,5 @@
-(ns sane-tabber.statistics)
+(ns sane-tabber.statistics
+  (:require [sane-tabber.utils :refer [filter-first]]))
 
 ;; Round room structure
 ;{:judges [ids...]
@@ -58,6 +59,9 @@
 
 (defn ks-map [& ks]
   (map #(get-in % ks)))
+
+(defn get-by-id [coll id k]
+  (filter-first #(= (get % k) id) coll))
 
 (defn team-ballots-filter [team-id]
   (ballot-filter :teams team-id))

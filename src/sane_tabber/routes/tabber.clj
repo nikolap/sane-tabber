@@ -2,12 +2,13 @@
   (:require [compojure.core :refer [defroutes GET POST DELETE context]]
             [ring.util.http-response :refer [ok]]
             [clojure.data.csv :as csv]
-            [clojure.java.io :as io]
             [clojure.tools.logging :as log]
+            [ring.util.response :as ring-resp]
             [sane-tabber.layout :as layout]
             [sane-tabber.db.core :as db]
             [sane-tabber.utils :refer [stringify-reduce stringify-map wrap-transit-resp]]
-            [sane-tabber.pairings :refer [pair-round pair-judges-only pair-teams-to-existing-rooms]]))
+            [sane-tabber.pairings :refer [pair-round pair-judges-only pair-teams-to-existing-rooms]]
+            [sane-tabber.reporting :refer [teams-tab speakers-tab]]))
 
 (defn app-page []
   (layout/render "home.html"))
@@ -104,9 +105,6 @@
   (wrap-transit-resp
     (stringify-map (db/get-speakers tid) [:_id :tournament-id :team-id])))
 
-(defn get-teams-with-speakers [tid]
-  )
-
 (defn get-judges [tid]
   (wrap-transit-resp
     (stringify-map (db/get-judges tid) [:_id :tournament-id])))
@@ -180,6 +178,40 @@
   (db/delete-round rid)
   "success")
 
+(defn as-csv [data csv-name]
+  (let [resp (ring-resp/response data)
+        disp (str "attachment; filename=\"" csv-name "\"")]
+    (-> resp
+        (ring-resp/header "content-disposition" disp)
+        (ring-resp/content-type "text/csv;charset=utf-8"))))
+
+(defn file-name-prep [{:keys [name]} suffix]
+  (-> name
+      (str suffix)
+      clojure.string/lower-case
+      (clojure.string/replace " " "-")))
+
+(defn team-tab-report [tid]
+  (log/info "Generating team tab report for tournament" tid)
+  (let [teams (db/get-teams tid)
+        schools (db/get-schools tid)
+        round-data (db/get-all-scored-round-rooms tid)
+        rounds (db/get-rounds tid)
+        tournament (db/get-tournament tid)]
+    (as-csv (teams-tab teams schools round-data rounds)
+            (file-name-prep tournament "-team-tab.csv"))))
+
+(defn speaker-tab-report [tid]
+  (log/info "Generating team tab report for tournament" tid)
+  (let [speakers (db/get-speakers tid)
+        teams (db/get-teams tid)
+        schools (db/get-schools tid)
+        round-data (db/get-all-scored-round-rooms tid)
+        rounds (db/get-rounds tid)
+        tournament (db/get-tournament tid)]
+    (as-csv (speakers-tab speakers teams schools round-data rounds)
+            (file-name-prep tournament "-speaker-tab.csv"))))
+
 (defroutes tabber-routes
            (GET "/" [] (app-page))
 
@@ -189,7 +221,6 @@
              (GET "/" [] (get-tournament tid))
              (GET "/rooms" [] (get-rooms tid))
              (GET "/teams" [] (get-teams tid))
-             (GET "/teams-speakers" [] (get-teams-with-speakers tid))
              (GET "/speakers" [] (get-speakers tid))
              (GET "/judges" [] (get-judges tid))
              (GET "/scratches" [] (get-scratches tid))
@@ -202,5 +233,12 @@
              (POST "/rounds/:rid/autopair" [rid] (autopair-round tid rid))
              (POST "/rounds/:rid/autopair-judges-first" [rid] (autopair-judges-only tid rid))
              (POST "/rounds/:rid/autopair-teams-existing" [rid] (autopair-teams-to-existing tid rid))
-             (DELETE "/rounds/:rid" [rid] (delete-round rid))))
+             (DELETE "/rounds/:rid" [rid] (delete-round rid)))
+
+           (context "/tournaments/:tid/reports" [tid]
+             (GET "/team-tab" [] (team-tab-report tid))
+             (GET "/speaker-tab" [] (speaker-tab-report tid))
+             (GET "/team-stats" [] (prn "asdf"))
+             (GET "/rounds/:rid/round-pairings" [] (prn "asdf"))
+             (GET "/rounds/:rid/round-ballots" [] (prn "asdf"))))
 

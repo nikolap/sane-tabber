@@ -1,6 +1,5 @@
 (ns sane-tabber.pairings
-  (:require [sane-tabber.statistics :refer [judge-seen-teams team-points team-speaks team-position-counts]]
-            [sane-tabber.utils :refer [filter-first]]))
+  (:require [sane-tabber.statistics :refer [judge-seen-teams team-points team-speaks team-position-counts get-by-id]]))
 
 ;; ----Logic for complete auto-pairing----
 ;; 1. pair teams based off of score
@@ -165,9 +164,6 @@
          (room-assigner rooms)
          (judge-looper (sort-by :rating > judges) scratches prev-round-data)
          idify)))
-
-(defn get-by-id [coll id k]
-  (filter-first #(= (get % k) id) coll))
 
 (defn pair-judges-only [judges rooms team-count teams-per-room]
   (let [room-count (int (/ (count judges) (int (/ team-count teams-per-room))))
