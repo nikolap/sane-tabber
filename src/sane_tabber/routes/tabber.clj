@@ -1,9 +1,10 @@
 (ns sane-tabber.routes.tabber
-  (:require [compojure.core :refer [defroutes GET POST DELETE context]]
+  (:require [compojure.core :refer [defroutes routes GET POST DELETE context]]
             [ring.util.http-response :refer [ok]]
             [clojure.data.csv :as csv]
             [clojure.tools.logging :as log]
             [ring.util.response :as ring-resp]
+            [buddy.auth.accessrules :refer [restrict error]]
             [sane-tabber.layout :as layout]
             [sane-tabber.db.core :as db]
             [sane-tabber.utils :refer [stringify-reduce stringify-map wrap-transit-resp]]
@@ -81,6 +82,10 @@
     (upload-judges tournament-id judges-file)
     (upload-teams tournament-id teams-file)
     "success"))
+
+(defn get-users []
+  (wrap-transit-resp
+    (map :username (db/get-users))))
 
 (defn get-tournaments [user]
   (let [user-id (:_id (db/get-user user))]
@@ -224,33 +229,67 @@
     (as-csv (round-pairings rooms teams schools judges round-data tournament)
             (file-name-prep tournament (str "-round-" (:round-number round) "-pairings.csv")))))
 
+(defn restriction [allowed?]
+  (if allowed?
+    true
+    (error "You do not have permissions to make this action")))
+
+(defn editor? [{:keys [session params]}]
+  (let [user-id (-> session :identity db/get-user :_id)
+        tournament (-> params :tid db/get-tournament)
+        editors (conj (:editors tournament) (:owner tournament))]
+    (prn editors user-id)
+    (restriction (contains? (set editors) user-id))))
+
+(defn owner? [{:keys [session params]}]
+  (let [user-id (-> session :identity db/get-user :_id)
+        owner (-> params :tid db/get-tournament :owner)]
+    (restriction (= owner user-id))))
+
+(defn unauth-handler [request _]
+  (layout/error-page
+    {:status 403
+     :title  (str "Access to " (:uri request) " is not authorized")}))
+
 (defroutes tabber-routes
            (GET "/" [] (app-page))
 
+           (GET "/ajax/users" {} (get-users))
            (GET "/ajax/tournaments" {:keys [session]} (get-tournaments (:identity session)))
            (POST "/ajax/tournaments" {:keys [session params]} (create-tournament (:identity session) params))
            (context "/ajax/tournaments/:tid" [tid]
-             (GET "/" [] (get-tournament tid))
-             (GET "/rooms" [] (get-rooms tid))
-             (GET "/teams" [] (get-teams tid))
-             (GET "/speakers" [] (get-speakers tid))
-             (GET "/judges" [] (get-judges tid))
-             (GET "/scratches" [] (get-scratches tid))
-             (GET "/schools" [] (get-schools tid))
-             (GET "/rounds" [] (get-rounds tid))
-             (GET "/round-rooms" [] (get-all-round-rooms tid))
-             (GET "/:rid/round-rooms" [rid] (get-round-rooms rid))
-             (DELETE "/delete" [] (delete-tournament tid))
-             (POST "/rounds/new" [] (create-round tid))
-             (POST "/rounds/:rid/autopair" [rid] (autopair-round tid rid))
-             (POST "/rounds/:rid/autopair-judges-first" [rid] (autopair-judges-only tid rid))
-             (POST "/rounds/:rid/autopair-teams-existing" [rid] (autopair-teams-to-existing tid rid))
-             (DELETE "/rounds/:rid" [rid] (delete-round rid)))
+             (restrict
+               (routes
+                 (GET "/" [] (get-tournament tid))
+                 (GET "/rooms" [] (get-rooms tid))
+                 (GET "/teams" [] (get-teams tid))
+                 (GET "/speakers" [] (get-speakers tid))
+                 (GET "/judges" [] (get-judges tid))
+                 (GET "/scratches" [] (get-scratches tid))
+                 (GET "/schools" [] (get-schools tid))
+                 (GET "/rounds" [] (get-rounds tid))
+                 (GET "/round-rooms" [] (get-all-round-rooms tid))
+                 (GET "/:rid/round-rooms" [rid] (get-round-rooms rid))
+                 (DELETE "/delete" [] (restrict
+                                        (delete-tournament tid)
+                                        {:handler  owner?
+                                         :on-error unauth-handler}))
+                 (POST "/rounds/new" [] (create-round tid))
+                 (POST "/rounds/:rid/autopair" [rid] (autopair-round tid rid))
+                 (POST "/rounds/:rid/autopair-judges-first" [rid] (autopair-judges-only tid rid))
+                 (POST "/rounds/:rid/autopair-teams-existing" [rid] (autopair-teams-to-existing tid rid))
+                 (DELETE "/rounds/:rid" [rid] (delete-round rid)))
+               {:handler  editor?
+                :on-error unauth-handler}))
 
            (context "/tournaments/:tid/reports" [tid]
-             (GET "/team-tab" [] (team-tab-report tid))
-             (GET "/speaker-tab" [] (speaker-tab-report tid))
-             (GET "/team-stats" [] (prn "asdf"))
-             (GET "/rounds/:rid/round-pairings" [rid] (round-pairings-report tid rid))
-             (GET "/rounds/:rid/round-ballots" [rid] (prn "asdf"))))
+             (restrict
+               (routes
+                 (GET "/team-tab" [] (team-tab-report tid))
+                 (GET "/speaker-tab" [] (speaker-tab-report tid))
+                 (GET "/team-stats" [] (prn "asdf"))
+                 (GET "/rounds/:rid/round-pairings" [rid] (round-pairings-report tid rid))
+                 (GET "/rounds/:rid/round-ballots" [rid] (prn "asdf")))
+               {:handler  editor?
+                :on-error unauth-handler})))
 

@@ -63,6 +63,9 @@
 (defn get-user [username]
   (mc/find-one-as-map @db "users" {:username username}))
 
+(defn get-users []
+  (mc/find-maps @db "users" {} [:username]))
+
 (defn get-user-by-email [email]
   (mc/find-one-as-map @db "users" {:email email}))
 
