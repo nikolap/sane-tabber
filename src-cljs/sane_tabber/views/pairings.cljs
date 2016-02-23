@@ -1,5 +1,6 @@
 (ns sane-tabber.views.pairings
   (:require [reagent.core :as reagent]
+            [reagent.session :as session]
             [sane-tabber.session :refer [app-state get-by-id]]
             [sane-tabber.utils :refer [id-value event-value]]
             [sane-tabber.views.tooltip :refer [tooltip tooltip-data hide-tooltip]]
@@ -117,13 +118,16 @@
              [:i.fa.fa-plus]]])])
       [pairings-footer tournament round-rooms rooms all-teams all-judges]])])
 
-;; todo: export pairings to spreadsheet
 (defn pairings-page []
   [:section.content>div.row
    [:div.col-sm-8
     [tooltip @tooltip-data judge-tooltip-submit]
     [:div.box.box-primary
      [:div.box-header.with-border>h3.box-title "Pairings"]
+     [:a.btn.btn-primary.btn-flat
+      {:href   (str "/tournaments/" (session/get :tid) "/reports/rounds/" (session/get :rid) "/round-pairings")
+       :target "_new"}
+      "Export"]
      [:div.box-body.no-padding
       (if (every? @app-state [:tournament :rooms :teams :judges])
         [pairings-table @app-state]

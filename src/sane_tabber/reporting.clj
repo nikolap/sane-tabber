@@ -1,6 +1,7 @@
 (ns sane-tabber.reporting
   (:require [sane-tabber.statistics :refer [team-points team-speaks speaker-score get-by-id]]
-            [sane-tabber.csv :refer [write-csv]]))
+            [sane-tabber.csv :refer [write-csv]]
+            [sane-tabber.db.core :as db]))
 
 (defn oid->key [id]
   (-> id str keyword))
@@ -13,6 +14,10 @@
 
 (defn generate-speaker-header [rounds]
   (concat [:speaker :team-name] (round-keywords rounds) [:total-speaks :average]))
+
+(defn generate-pairings-header [team-count]
+  (concat [:room] (for [i (range 1 (inc team-count))]
+                    (keyword (str "team-" i))) [:judges]))
 
 (defn round-data-extractor [rounds round-data item-id score-fn]
   (into {}
@@ -54,7 +59,20 @@
 
 (defn team-position-stats [teams round-data rounds])
 
-(defn round-pairings [])
+(defn round-pairings [rooms all-teams schools all-judges round-data tournament]
+  (let [header-keys (generate-pairings-header (:team-count tournament))
+        map-seq (map (fn [{:keys [room teams judges]}]
+                       (apply
+                         merge
+                         {:room   (:name (get-by-id rooms room :_id))
+                          :judges (clojure.string/join " // " (map #(:name (get-by-id all-judges % :_id)) judges))}
+                         (map-indexed (fn [i [id _]]
+                                        (let [team (get-by-id all-teams (db/object-id (name id)) :_id)]
+                                          {(keyword (str "team-" (inc i)))
+                                           (str (:name (get-by-id schools (:school-id team) :_id)) " " (:team-code team))}))
+                                      (sort-by second teams))))
+                     round-data)]
+    (write-csv map-seq header-keys)))
 
 (defn round-ballots [])
 

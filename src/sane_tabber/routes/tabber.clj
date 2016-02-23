@@ -8,7 +8,7 @@
             [sane-tabber.db.core :as db]
             [sane-tabber.utils :refer [stringify-reduce stringify-map wrap-transit-resp]]
             [sane-tabber.pairings :refer [pair-round pair-judges-only pair-teams-to-existing-rooms]]
-            [sane-tabber.reporting :refer [teams-tab speakers-tab]]))
+            [sane-tabber.reporting :refer [teams-tab speakers-tab round-pairings]]))
 
 (defn app-page []
   (layout/render "home.html"))
@@ -212,6 +212,18 @@
     (as-csv (speakers-tab speakers teams schools round-data rounds)
             (file-name-prep tournament "-speaker-tab.csv"))))
 
+(defn round-pairings-report [tid rid]
+  (log/info "Generating round pairings for round" rid)
+  (let [round (db/get-round rid)
+        rooms (db/get-rooms tid)
+        teams (db/get-teams tid)
+        schools (db/get-schools tid)
+        judges (db/get-judges tid)
+        round-data (db/get-round-rooms rid)
+        tournament (db/get-tournament tid)]
+    (as-csv (round-pairings rooms teams schools judges round-data tournament)
+            (file-name-prep tournament (str "-round-" (:round-number round) "-pairings.csv")))))
+
 (defroutes tabber-routes
            (GET "/" [] (app-page))
 
@@ -239,6 +251,6 @@
              (GET "/team-tab" [] (team-tab-report tid))
              (GET "/speaker-tab" [] (speaker-tab-report tid))
              (GET "/team-stats" [] (prn "asdf"))
-             (GET "/rounds/:rid/round-pairings" [] (prn "asdf"))
-             (GET "/rounds/:rid/round-ballots" [] (prn "asdf"))))
+             (GET "/rounds/:rid/round-pairings" [rid] (round-pairings-report tid rid))
+             (GET "/rounds/:rid/round-ballots" [rid] (prn "asdf"))))
 
