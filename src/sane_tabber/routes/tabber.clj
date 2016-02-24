@@ -83,9 +83,9 @@
     (upload-teams tournament-id teams-file)
     "success"))
 
-(defn get-users []
+(defn get-users [_]
   (wrap-transit-resp
-    (map :username (db/get-users))))
+    (stringify-map (db/get-users) [:_id])))
 
 (defn get-tournaments [user]
   (let [user-id (:_id (db/get-user user))]
@@ -237,13 +237,12 @@
 (defn editor? [{:keys [session params]}]
   (let [user-id (-> session :identity db/get-user :_id)
         tournament (-> params :tid db/get-tournament)
-        editors (conj (:editors tournament) (:owner tournament))]
-    (prn editors user-id)
+        editors (conj (:editors tournament) (:owner-id tournament))]
     (restriction (contains? (set editors) user-id))))
 
 (defn owner? [{:keys [session params]}]
   (let [user-id (-> session :identity db/get-user :_id)
-        owner (-> params :tid db/get-tournament :owner)]
+        owner (-> params :tid db/get-tournament :owner-id)]
     (restriction (= owner user-id))))
 
 (defn unauth-handler [request _]
@@ -254,7 +253,6 @@
 (defroutes tabber-routes
            (GET "/" [] (app-page))
 
-           (GET "/ajax/users" {} (get-users))
            (GET "/ajax/tournaments" {:keys [session]} (get-tournaments (:identity session)))
            (POST "/ajax/tournaments" {:keys [session params]} (create-tournament (:identity session) params))
            (context "/ajax/tournaments/:tid" [tid]
@@ -270,8 +268,12 @@
                  (GET "/rounds" [] (get-rounds tid))
                  (GET "/round-rooms" [] (get-all-round-rooms tid))
                  (GET "/:rid/round-rooms" [rid] (get-round-rooms rid))
+                 (GET "/users" [] (restrict
+                                    get-users
+                                    {:handler  owner?
+                                     :on-error unauth-handler}))
                  (DELETE "/delete" [] (restrict
-                                        (delete-tournament tid)
+                                        (fn [_] (delete-tournament tid))
                                         {:handler  owner?
                                          :on-error unauth-handler}))
                  (POST "/rounds/new" [] (create-round tid))

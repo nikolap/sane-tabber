@@ -32,6 +32,7 @@
                  [cljs-ajax "0.5.3"]
                  [clojurewerkz/mailer "1.3.0"]
                  [org.webjars/webjars-locator-jboss-vfs "0.1.0"]
+                 [org.webjars/typeaheadjs "0.11.1"]
                  [luminus-immutant "0.1.1"]
                  [prismatic/dommy "1.1.0"]
                  [org.clojure/data.csv "0.1.3"]
@@ -54,7 +55,8 @@
      :compiler
                    {:output-to    "target/cljsbuild/public/js/app.js"
                     :output-dir   "target/cljsbuild/public/js/out"
-                    :externs      ["react/externs/react.js"]
+                    :externs      ["resources/externs.js"
+                                   "react/externs/react.js"]
                     :pretty-print true}}}}
 
   :profiles

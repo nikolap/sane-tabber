@@ -123,6 +123,6 @@
                     (session/put! :page :school-editor))
 (secretary/defroute "/:tid/settings" [tid]
                     (session/put! :tid tid)
-                    (basic-get "/ajax/users" :users)
+                    (basic-get (str "/ajax/tournaments/" tid "/users") :users)
                     (basic-get (str "/ajax/tournaments/" tid "/") :tournament)
                     (session/put! :page :settings))
