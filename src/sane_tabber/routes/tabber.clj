@@ -183,6 +183,14 @@
   (db/delete-round rid)
   "success")
 
+(defn add-editor [{:keys [tid id]}]
+  (wrap-transit-resp
+    (stringify-reduce (db/from-dbo (db/add-editor tid id)) [:_id :owner-id :editors])))
+
+(defn remove-editor [{:keys [tid id]}]
+  (wrap-transit-resp
+    (stringify-reduce (db/from-dbo (db/remove-editor tid id)) [:_id :owner-id :editors])))
+
 (defn as-csv [data csv-name]
   (let [resp (ring-resp/response data)
         disp (str "attachment; filename=\"" csv-name "\"")]
@@ -276,6 +284,14 @@
                                         (fn [_] (delete-tournament tid))
                                         {:handler  owner?
                                          :on-error unauth-handler}))
+                 (POST "/editors/add" {:keys [params]} (restrict
+                                           (fn [_] (add-editor params))
+                                           {:handler  owner?
+                                            :on-error unauth-handler}))
+                 (POST "/editors/remove" {:keys [params]} (restrict
+                                              (fn [_] (remove-editor params))
+                                              {:handler  owner?
+                                               :on-error unauth-handler}))
                  (POST "/rounds/new" [] (create-round tid))
                  (POST "/rounds/:rid/autopair" [rid] (autopair-round tid rid))
                  (POST "/rounds/:rid/autopair-judges-first" [rid] (autopair-judges-only tid rid))

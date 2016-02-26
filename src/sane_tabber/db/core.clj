@@ -235,3 +235,9 @@
 (defn reinsert-round-rooms [tid rid round-rooms]
   (clear-round-room-data rid)
   (batch-insert-round-rooms tid rid round-rooms))
+
+(defn add-editor [tid id]
+  (mc/find-and-modify @db "tournaments" {:_id (object-id tid)} {$push {:editors (object-id id)}} {:return-new true}))
+
+(defn remove-editor [tid id]
+  (mc/find-and-modify @db "tournaments" {:_id (object-id tid)} {$pull {:editors (object-id id)}} {:return-new true}))
