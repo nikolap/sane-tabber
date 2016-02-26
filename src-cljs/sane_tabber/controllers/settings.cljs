@@ -3,7 +3,8 @@
             [reagent.session :as session]
             [sane-tabber.session :refer [app-state get-by-id insert!]]
             [sane-tabber.utils :refer [id-value]]
-            [sane-tabber.controllers.generic :refer [error-handler]]))
+            [sane-tabber.controllers.generic :refer [error-handler]]
+            [dommy.core :as dom :refer-macros [sel1]]))
 
 (defn unused-users []
   (let [tournament (:tournament @app-state)]
@@ -17,7 +18,8 @@
            :params          {:id (:_id (get-by-id :users username :username))}
            :handler         #(insert! :tournament %)
            :error-handler   error-handler
-           :response-format :transit})))
+           :response-format :transit})
+    (dom/set-value! (sel1 :#new-user-form) nil)))
 
 (defn remove-editor [id]
   (POST (str "/ajax/tournaments/" (session/get :tid) "/editors/remove")
