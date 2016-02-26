@@ -2,11 +2,16 @@
   (:require [reagent.core :as reagent]
             [sane-tabber.session :refer [app-state get-by-id]]))
 
+(defn unused-users []
+  (let [tournament (:tournament @app-state)]
+    (filter #(not (contains? (set (conj (:editors tournament) (:owner-id tournament))) (:_id %)))
+            (:users @app-state))))
+
 (defn bloodhound []
   (js/Bloodhound. (clj->js
                     {:datumTokenizer (-> js/Bloodhound .-tokenizers .-whitespace)
                      :queryTokenizer (-> js/Bloodhound .-tokenizers .-whitespace)
-                     :local          (map :username (:users @app-state))})))
+                     :local          (map :username (unused-users))})))
 
 (defn mount-typeahead []
   (.typeahead (js/$ ".typeahead") "destroy")
