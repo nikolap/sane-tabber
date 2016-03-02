@@ -126,6 +126,22 @@
              [:i.fa.fa-plus]]])])
       [pairings-footer tournament round-rooms rooms all-teams all-judges]])])
 
+(defn unused-pane [{:keys [teams judges round-rooms]}]
+  [:div.box-body
+   [:div
+    [:h4 "Teams"]
+    [:ul
+     (for [{:keys [_id] :as team} (unused-teams teams round-rooms)
+           :let [stats (get-by-id :stats _id :id)]]
+       ^{:key _id}
+       [:li (str (team-name team) " (" (:points stats) ")")])]]
+   [:div
+    [:h4 "Judges"]
+    [:ul
+     (for [{:keys [_id name]} (unused-judges judges round-rooms)]
+       ^{:key _id}
+       [:li name])]]])
+
 (defn pairings-page []
   [:section.content>div.row
    [:div.col-sm-8
@@ -137,7 +153,7 @@
        :target "_new"}
       "Export"]
      [:button.btn.btn-info.btn-flat
-      {:type "button"
+      {:type     "button"
        :on-click #(swap! app-state update :show-stats? not)}
       "Toggle Stats"]
      [:div.box-body.no-padding
@@ -147,5 +163,4 @@
    [:div.col-sm-4
     [:div.box.box-info
      [:div.box-header.with-border>h3.box-title "Unused info"]
-     [:div.box-body
-      ]]]])
+     [unused-pane @app-state]]]])
