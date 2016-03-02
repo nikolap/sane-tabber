@@ -66,6 +66,8 @@
 (secretary/defroute "/:tid/pairings" [tid]
                     (session/put! :tid tid)
                     (basic-get (str "/ajax/tournaments/" tid "/rounds") :rounds)
+                    (basic-get (str "/ajax/tournaments/" tid "/") :tournament)
+                    (basic-get (str "/ajax/tournaments/" tid "/teams") :teams)
                     (session/put! :page :rounds))
 (secretary/defroute "/:tid/pairings/:rid" [tid rid]
                     (session/put! :tid tid)

@@ -32,6 +32,7 @@
          "Auto Pair (JUDGES FIRST)"]
         [:button.btn.btn-info.btn-xs.btn-flat
          {:type     "button"
+          :disabled (not= "partial" status)
           :on-click #(auto-pair-click _id status auto-pair-teams)}
          "Auto Pair (ADD TEAMS)"]
         [:button.btn.btn-primary.btn-xs.btn-flat
