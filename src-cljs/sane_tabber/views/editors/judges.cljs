@@ -9,7 +9,7 @@
 (defn format-team-name [{:keys [school-id team-code]}]
   (str (:name (get-by-id :schools school-id :_id)) " " team-code))
 
-(defn judge-table-footer []
+(defn judge-table-footer [registration?]
   [:tr
    [:td
     [:div#name-group.form-group.col-xs-12
@@ -19,11 +19,13 @@
        :placeholder "enter a judge name and press enter"
        :on-key-down #(when (= (.-keyCode %) 13)
                       (submit-new-judge))}]]]
-   [:td.hidden [:select#new-rating.form-control.input-sm
-         {:default-value 5}
-         (for [i (range 1 11)]
-           ^{:key i}
-           [:option i])]]
+   [:td
+    {:class (when registration? "hidden")}
+    [:select#new-rating.form-control.input-sm
+     {:default-value 5}
+     (for [i (range 1 11)]
+       ^{:key i}
+       [:option i])]]
    [:td [checkbox {:id "new-accessible"}]]
    [:td [:div.checkbox
          [:label>input {:type "checkbox" :id "new-disabled"}]
@@ -60,7 +62,7 @@
               :on-click #(update-dropped judge)}
              (if signed-in? "In Use" "Not In Use")]]])
     [:tfooter
-     [judge-table-footer]]]])
+     [judge-table-footer registration?]]]])
 
 (defn scratches-table-footer [teams judges]
   (let [teams (map #(assoc % :team-name (format-team-name %)) teams)]
