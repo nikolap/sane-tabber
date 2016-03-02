@@ -18,22 +18,18 @@
 (defn team-name [{:keys [school-id team-code]}]
   (str (school-name school-id) " " team-code))
 
-(defn teams-select [new? teams & [params stats]]
+(defn teams-select [new? teams & [params]]
   [:select
-   (merge {:class (str (if new? "new-team-select" "team-select") " form-control input-sm")}
-          (when-not new?
-            {:data-toggle "tooltip"
-             :title       (str "Points: "
-                               (:points stats)
-                               "\n"
-                               "Position stats: "
-                               (clojure.string/join ", " (sort-by first (:position-data stats))))})
-          params)
+   (merge {:class (str (if new? "new-team-select" "team-select") " form-control input-sm")} params)
    [:option nil]
-   (for [{:keys [_id] :as team} teams]
+   (for [{:keys [_id] :as team} teams
+         :let [stats (get-by-id :stats _id :id)]]
      ^{:key _id}
      [:option {:value _id}
-      (team-name team)])])
+      (str (team-name team)
+           " (" (:points stats) ")"
+           (when (:show-stats? @app-state)
+             (str " / (" (clojure.string/join ", " (sort-by first (:position-data stats))) ")")))])])
 
 (defn judge-tooltip-submit [select-value round-room-id new-judges]
   (when-let [judge (get-by-id :judges select-value :_id)]
@@ -114,8 +110,7 @@
            [:td
             [teams-select false (sort-by (juxt :school-id :team-code) (unused-teams all-teams round-rooms team-id))
              {:on-change #(update-round-room-teams rr (event-value %) (inc i))
-              :value     team-id}
-             (get-by-id :stats team-id :id)]])
+              :value     team-id}]])
 
          (let [rr-id _id]
            [:td (for [{:keys [_id] :as judge} rr-judges]
@@ -141,6 +136,10 @@
       {:href   (str "/tournaments/" (session/get :tid) "/reports/rounds/" (session/get :rid) "/round-pairings")
        :target "_new"}
       "Export"]
+     [:button.btn.btn-info.btn-flat
+      {:type "button"
+       :on-click #(swap! app-state update :show-stats? not)}
+      "Toggle Stats"]
      [:div.box-body.no-padding
       (if (every? @app-state [:tournament :rooms :teams :judges])
         [pairings-table @app-state]
