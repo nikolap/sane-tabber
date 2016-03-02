@@ -9,7 +9,8 @@
             [sane-tabber.db.core :as db]
             [sane-tabber.utils :refer [stringify-reduce stringify-map wrap-transit-resp]]
             [sane-tabber.pairings :refer [pair-round pair-judges-only pair-teams-to-existing-rooms]]
-            [sane-tabber.reporting :refer [teams-tab speakers-tab round-pairings]]))
+            [sane-tabber.reporting :refer [teams-tab speakers-tab round-pairings]]
+            [sane-tabber.statistics :refer [pairing-stats]]))
 
 (defn app-page []
   (layout/render "home.html"))
@@ -133,6 +134,12 @@
 (defn get-round-rooms [rid]
   (wrap-transit-resp
     (stringify-map (db/get-round-rooms rid) [:_id :tournament-id :round-id :room :judges])))
+
+(defn get-pairing-stats [tid]
+  (let [teams (db/get-teams tid)
+        round-data (db/get-all-scored-round-rooms tid)]
+    (wrap-transit-resp
+      (stringify-map (pairing-stats round-data teams) [:id]))))
 
 (defn delete-tournament [id]
   (db/delete-tournament id)
@@ -276,6 +283,7 @@
                  (GET "/rounds" [] (get-rounds tid))
                  (GET "/round-rooms" [] (get-all-round-rooms tid))
                  (GET "/:rid/round-rooms" [rid] (get-round-rooms rid))
+                 (GET "/:rid/pairing-stats" [] (get-pairing-stats tid))
                  (GET "/users" [] (restrict
                                     get-users
                                     {:handler  owner?

@@ -4,5 +4,5 @@
 
 (defn registration-page []
   [:div
-   [teams-editor-page]
-   [judges-editor-page]])
+   [teams-editor-page true]
+   [judges-editor-page true]])

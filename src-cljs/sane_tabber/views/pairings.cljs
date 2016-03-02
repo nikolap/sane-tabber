@@ -18,13 +18,22 @@
 (defn team-name [{:keys [school-id team-code]}]
   (str (school-name school-id) " " team-code))
 
-(defn teams-select [new? teams & [params]]
+(defn teams-select [new? teams & [params stats]]
   [:select
-   (merge {:class (str (if new? "new-team-select" "team-select") " form-control input-sm")} params)
-   (if new? [:option nil] [:option {:disabled true :selected true} "-- select an option -- "])
+   (merge {:class (str (if new? "new-team-select" "team-select") " form-control input-sm")}
+          (when-not new?
+            {:data-toggle "tooltip"
+             :title       (str "Points: "
+                               (:points stats)
+                               "\n"
+                               "Position stats: "
+                               (clojure.string/join ", " (sort-by first (:position-data stats))))})
+          params)
+   [:option nil]
    (for [{:keys [_id] :as team} teams]
      ^{:key _id}
-     [:option {:value _id} (team-name team)])])
+     [:option {:value _id}
+      (team-name team)])])
 
 (defn judge-tooltip-submit [select-value round-room-id new-judges]
   (when-let [judge (get-by-id :judges select-value :_id)]
@@ -88,7 +97,6 @@
      [:tbody
       (for [{:keys [_id room judges teams] :as rr} round-rooms
             :let [room (get-by-id :rooms room :_id)
-                  rr-teams (when teams (map #(get-by-id :teams (name (first %)) :_id) (sort-by val teams)))
                   rr-judges (map #(get-by-id :judges % :_id) judges)]]
         ^{:key _id}
         [:tr
@@ -97,12 +105,17 @@
                 :value     (:_id room)}]]
 
          (for [i (range (:team-count tournament))
-               :let [team-id (:_id (nth rr-teams i))]]
+               :let [team-id (->> teams
+                                  (filter #(= (second %) (inc i)))
+                                  first
+                                  first
+                                  (#(if (nil? %1) %1 (name %1))))]]
            ^{:key i}
            [:td
             [teams-select false (sort-by (juxt :school-id :team-code) (unused-teams all-teams round-rooms team-id))
              {:on-change #(update-round-room-teams rr (event-value %) (inc i))
-              :value     team-id}]])
+              :value     team-id}
+             (get-by-id :stats team-id :id)]])
 
          (let [rr-id _id]
            [:td (for [{:keys [_id] :as judge} rr-judges]

@@ -19,7 +19,7 @@
        :placeholder "enter a judge name and press enter"
        :on-key-down #(when (= (.-keyCode %) 13)
                       (submit-new-judge))}]]]
-   [:td [:select#new-rating.form-control.input-sm
+   [:td.hidden [:select#new-rating.form-control.input-sm
          {:default-value 5}
          (for [i (range 1 11)]
            ^{:key i}
@@ -31,11 +31,11 @@
           {:on-click submit-new-judge}
           [:i.fa.fa-plus] " Add Judge"]]]])
 
-(defn judges-table [judges]
+(defn judges-table [judges registration?]
   [:table.table.table-striped.table-condensed.table-hover.table-bordered.table-centered.table-fixed
    [:thead>tr
     [:th "Judge"]
-    [:th "Rating"]
+    (when-not registration? [:th "Rating"])
     [:th "Accessible?"]
     [:th "Signed in?"]]
    [:tbody
@@ -43,13 +43,14 @@
       ^{:key _id}
       [:tr
        [input-editor-cell judge :name update-name]
-       [:td
-        [:select.form-control.input-sm
-         {:value     rating
-          :on-change #(update-rating judge (event-value %))}
-         (for [i (range 1 11)]
-           ^{:key i}
-           [:option i])]]
+       (when-not registration?
+         [:td
+          [:select.form-control.input-sm
+           {:value     rating
+            :on-change #(update-rating judge (event-value %))}
+           (for [i (range 1 11)]
+             ^{:key i}
+             [:option i])]])
        [:td [:button.btn.btn-xs.btn-flat.btn-block
              {:class    (if accessible? "btn-success" "btn-default")
               :on-click #(update-accessible judge)}
@@ -93,14 +94,18 @@
     [:tfooter
      [scratches-table-footer teams judges]]]])
 
-(defn judges-editor-page []
-  [:section.content>div.row>div.col-sm-12
-   [:div.box.box-primary
-    [:div.box-header.with-border>h3.box-title "Judges"]
-    [:div.box-body.no-padding
-     [judges-table (:judges @app-state)]]]
+(defn judges-editor-page
+  ([registration?]
+   [:section.content>div.row>div.col-sm-12
+    [:div.box.box-primary
+     [:div.box-header.with-border>h3.box-title "Judges"]
+     [:div.box-body.no-padding
+      [judges-table (:judges @app-state) registration?]]]
 
-   [:div.box.box-danger
-    [:div.box-header.with-border>h3.box-title "Scratches"]
-    [:div.box-body.no-padding
-     [scratches-table @app-state]]]])
+    (when-not registration?
+      [:div.box.box-danger
+       [:div.box-header.with-border>h3.box-title "Scratches"]
+       [:div.box-body.no-padding
+        [scratches-table @app-state]]])])
+  ([]
+   [judges-editor-page false]))

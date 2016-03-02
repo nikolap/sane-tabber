@@ -95,14 +95,18 @@
        :on-click submit-new-speaker}
       "Add Speaker (or press enter)"]]]])
 
-(defn teams-editor-page []
-  [:section.content>div.row>div.col-sm-12
-   [tooltip @tooltip-data speaker-tooltip-fn]
-   [:div.box.box-primary
-    [:div.box-header.with-border>h3.box-title "Teams"]
-    [:div.box-body.no-padding
-     [teams-table @app-state]]]
-   [:div.box.box-primary
-    [:div.box-header.with-border>h3.box-title "Speakers"]
-    [:div.box-body.no-padding
-     [speakers-table @app-state]]]])
+(defn teams-editor-page
+  ([registration?]
+   [:section.content>div.row>div.col-sm-12
+    [tooltip @tooltip-data speaker-tooltip-fn]
+    [:div.box.box-primary
+     [:div.box-header.with-border>h3.box-title "Teams"]
+     [:div.box-body.no-padding
+      [teams-table @app-state]]]
+    (when-not registration?
+      [:div.box.box-primary
+       [:div.box-header.with-border>h3.box-title "Speakers"]
+       [:div.box-body.no-padding
+        [speakers-table @app-state]]])])
+  ([]
+   [teams-editor-page false]))

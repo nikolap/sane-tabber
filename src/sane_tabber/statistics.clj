@@ -106,3 +106,9 @@
   (frequencies
     (transduce (comp (team-ballots-filter team-id)
                      (map #(get-in % [:teams team-id]))) conj round-data)))
+
+(defn pairing-stats [round-data teams]
+  (map (fn [{:keys [_id]}]
+         {:id            _id
+          :points        (team-points round-data (keyword (str _id)))
+          :position-data (team-position-counts round-data (keyword (str _id)))}) teams))

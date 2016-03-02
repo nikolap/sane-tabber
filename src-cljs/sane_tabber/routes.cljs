@@ -76,6 +76,7 @@
                     (basic-get (str "/ajax/tournaments/" tid "/judges") :judges)
                     (basic-get (str "/ajax/tournaments/" tid "/rooms") :rooms)
                     (basic-get (str "/ajax/tournaments/" tid "/" rid "/round-rooms") :round-rooms)
+                    (basic-get (str "/ajax/tournaments/" tid "/" rid "/pairing-stats") :stats)
                     (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/teams") update-teams! :teams)
                     (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/judges") update-judges! :judges)
                     (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" tid "/editor/scratches") update-scratches! :scratches)

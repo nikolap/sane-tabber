@@ -152,3 +152,8 @@ span.twitter-typeahead {
 .input-group.input-group-lg span.twitter-typeahead .tt-dropdown-menu {
   top: 46px !important;
 }
+
+.tooltip-inner {
+    white-space:pre;
+    max-width: none;
+}
