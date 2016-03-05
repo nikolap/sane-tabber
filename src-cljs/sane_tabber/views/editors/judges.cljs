@@ -65,8 +65,8 @@
      [judge-table-footer registration?]]]])
 
 (defn scratches-table-footer [teams judges]
-  (let [teams (map #(assoc % :team-name (format-team-name %)) teams)]
-    (fn [_ judges]
+  (fn [teams judges]
+    (let [teams (map #(assoc % :team-name (format-team-name %)) teams)]
       [:tr
        [:td
         [select-custom-form-element "new-scratch-judge" nil (sort-by :name judges) :name :_id {:class "input-sm"}]]

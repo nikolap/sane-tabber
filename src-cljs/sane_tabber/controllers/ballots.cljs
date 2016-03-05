@@ -13,7 +13,7 @@
       (ws/disconnect-websocket! :round-rooms))
     (when-not (empty? rid)
       (basic-get (str "/ajax/tournaments/" (session/get :tid) "/" rid "/round-rooms") :round-rooms)
-      (ws/make-websocket! (str "ws://" (.-host js/location) "/ws/" (session/get :tid) "/" rid "/round-rooms") update-round-rooms! :round-rooms))))
+      (ws/make-websocket! (str (session/get :ws-base) (.-host js/location) "/ws/" (session/get :tid) "/" rid "/round-rooms") update-round-rooms! :round-rooms))))
 
 (defn get-team-score [active-scores team-id]
   (apply + (vals (get active-scores team-id))))

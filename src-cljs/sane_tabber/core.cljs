@@ -1,5 +1,6 @@
 (ns sane-tabber.core
   (:require [reagent.core :as reagent]
+            [reagent.session :as session]
             [secretary.core :as secretary :include-macros true]
             [goog.events :as events]
             [goog.history.EventType :as EventType]
@@ -27,3 +28,6 @@
 (defn init! []
   (hook-browser-navigation!)
   (mount-components))
+
+(defn set-ws-base [base]
+  (session/put! :ws-base base))

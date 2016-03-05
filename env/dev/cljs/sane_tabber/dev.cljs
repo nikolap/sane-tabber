@@ -8,4 +8,5 @@
   :websocket-url "ws://localhost:3449/figwheel-ws"
   :on-jsload core/mount-components)
 
+(core/set-ws-base "ws://")
 (core/init!)

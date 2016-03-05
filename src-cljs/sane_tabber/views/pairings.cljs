@@ -85,46 +85,44 @@
          "Add Room"
          [:i.fa.fa-plus]]]])))
 
-(defn pairings-table [{:keys [tournament round-rooms rooms teams judges scratches]}]
+(defn pairings-table [{:keys [tournament round-rooms rooms scratches] :as rd}]
   [:table.table.table-striped.table-condensed.table-hover
    [pairings-head tournament]
-   (let [all-teams teams
-         all-judges judges]
-     [:tbody
-      (for [{:keys [_id room judges teams] :as rr} round-rooms
-            :let [room (get-by-id :rooms room :_id)
-                  rr-judges (map #(get-by-id :judges % :_id) judges)]]
-        ^{:key _id}
-        [:tr
-         [:td [select-custom-form-element nil nil (unused-rooms rooms round-rooms (:_id room)) :name :_id
-               {:on-change #(update-round-room-room rr (event-value %))
-                :value     (:_id room)}]]
+   [:tbody
+    (for [{:keys [_id room judges teams] :as rr} round-rooms
+          :let [room (get-by-id :rooms room :_id)
+                rr-judges (map #(get-by-id :judges % :_id) judges)]]
+      ^{:key _id}
+      [:tr
+       [:td [select-custom-form-element nil nil (unused-rooms rooms round-rooms (:_id room)) :name :_id
+             {:on-change #(update-round-room-room rr (event-value %))
+              :value     (:_id room)}]]
 
-         (for [i (range (:team-count tournament))
-               :let [team-id (->> teams
-                                  (filter #(= (second %) (inc i)))
-                                  first
-                                  first
-                                  (#(if (nil? %1) %1 (name %1))))]]
-           ^{:key i}
-           [:td
-            [teams-select false (sort-by (juxt :school-id :team-code) (unused-teams all-teams round-rooms team-id))
-             {:on-change #(update-round-room-teams rr (event-value %) (inc i))
-              :value     team-id}]])
+       (for [i (range (:team-count tournament))
+             :let [team-id (->> teams
+                                (filter #(= (second %) (inc i)))
+                                first
+                                first
+                                (#(if (nil? %1) %1 (name %1))))]]
+         ^{:key i}
+         [:td
+          [teams-select false (sort-by (juxt :school-id :team-code) (unused-teams (:teams rd) round-rooms team-id))
+           {:on-change #(update-round-room-teams rr (event-value %) (inc i))
+            :value     team-id}]])
 
-         (let [rr-id _id]
-           [:td (for [{:keys [_id] :as judge} rr-judges]
-                  ^{:key _id}
-                  [judge-label judge nil rr-id])
-            [:button.btn.btn-success.btn-xs
-             {:type     "button"
-              :on-click #(reset! tooltip-data {:left        (.-pageX %)
-                                               :top         (.-pageY %)
-                                               :items       (unused-judges all-judges round-rooms)
-                                               :parent-item _id
-                                               :header      "Judge"})}
-             [:i.fa.fa-plus]]])])
-      [pairings-footer tournament round-rooms rooms all-teams all-judges]])])
+       (let [rr-id _id]
+         [:td (for [{:keys [_id] :as judge} rr-judges]
+                ^{:key _id}
+                [judge-label judge nil rr-id])
+          [:button.btn.btn-success.btn-xs
+           {:type     "button"
+            :on-click #(reset! tooltip-data {:left        (.-pageX %)
+                                             :top         (.-pageY %)
+                                             :items       (unused-judges (:judges rd) round-rooms)
+                                             :parent-item _id
+                                             :header      "Judge"})}
+           [:i.fa.fa-plus]]])])
+    [pairings-footer tournament round-rooms rooms (:teams rd) (:judges rd)]]])
 
 (defn unused-pane [{:keys [teams judges round-rooms]}]
   [:div.box-body

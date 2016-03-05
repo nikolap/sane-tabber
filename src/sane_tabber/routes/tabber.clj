@@ -301,6 +301,7 @@
                                               {:handler  owner?
                                                :on-error unauth-handler}))
                  (POST "/rounds/new" [] (create-round tid))
+                 (POST "/rounds/:rid/status" {:keys [params]} (prn "asdf"))
                  (POST "/rounds/:rid/autopair" [rid] (autopair-round tid rid))
                  (POST "/rounds/:rid/autopair-judges-first" [rid] (autopair-judges-only tid rid))
                  (POST "/rounds/:rid/autopair-teams-existing" [rid] (autopair-teams-to-existing tid rid))
