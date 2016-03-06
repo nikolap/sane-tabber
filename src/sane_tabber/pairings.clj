@@ -124,7 +124,8 @@
            teams team-role-data
            current-role 1]
       (if (<= current-role max-role)
-        (let [team-for-role (first (sort-by second (map #(into {} {(first %) (get (second %) current-role)}) teams)))]
+        (let [team-for-role (first (sort-by (comp first vals)
+                                            (map #(into {} {(first %) (or (get (second %) current-role) 0)}) teams)))]
           (recur
             (assoc out (first (first team-for-role)) current-role)
             (dissoc teams (first (first team-for-role)))
