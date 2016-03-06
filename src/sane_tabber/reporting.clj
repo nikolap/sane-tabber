@@ -1,5 +1,5 @@
 (ns sane-tabber.reporting
-  (:require [sane-tabber.statistics :refer [team-points team-speaks speaker-score get-by-id]]
+  (:require [sane-tabber.statistics :refer [team-points team-speaks speaker-score get-by-id team-position-counts]]
             [sane-tabber.csv :refer [write-csv]]
             [sane-tabber.db.core :as db]))
 
@@ -15,9 +15,15 @@
 (defn generate-speaker-header [rounds]
   (concat [:speaker :team-name] (round-keywords rounds) [:total-speaks :average]))
 
+(defn position-incrementer [team-count]
+  (for [i (range 1 (inc team-count))]
+    (keyword (str "team-" i))))
+
 (defn generate-pairings-header [team-count]
-  (concat [:room] (for [i (range 1 (inc team-count))]
-                    (keyword (str "team-" i))) [:judges]))
+  (concat [:room] (position-incrementer team-count) [:judges]))
+
+(defn generate-position-stats-header [team-count]
+  (concat [:team-name] (position-incrementer team-count)))
 
 (defn round-data-extractor [rounds round-data item-id score-fn]
   (into {}
@@ -57,7 +63,18 @@
                                 speakers)))]
     (write-csv map-seq header-keys)))
 
-(defn team-position-stats [teams round-data rounds])
+(defn team-position-stats [teams schools round-data tournament]
+  (let [team-count (:team-count tournament)
+        header-keys (generate-position-stats-header team-count)
+        map-seq (map (fn [team]
+                       (let [pos-counts (team-position-counts round-data (keyword (str (:_id team))))]
+                         (apply
+                           merge
+                           {:team-name (str (:name (get-by-id schools (:school-id team) :_id)) " " (:team-code team))}
+                           (map (fn [i]
+                                  {(keyword (str "team-" i)) (get pos-counts i)})
+                                (range 1 (inc team-count)))))) teams)]
+    (write-csv map-seq header-keys)))
 
 (defn round-pairings [rooms all-teams schools all-judges round-data tournament]
   (let [header-keys (generate-pairings-header (:team-count tournament))

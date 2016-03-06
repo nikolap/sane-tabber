@@ -15,7 +15,10 @@
        {:href (str "/tournaments/" (session/get :tid) "/reports/speaker-tab")
         :target "_blank"}
        "Speaker Tab"]
-      [:button.btn.btn-info.btn-flat.btn-block.disabled "Team Position Info"]
+      [:a.btn.btn-info.btn-flat.btn-block
+       {:href (str "/tournaments/" (session/get :tid) "/reports/team-stats")
+        :target "_blank"}
+       "Team Position Info"]
       [:button.btn.btn-info.btn-flat.btn-block.disabled "Teams"]
       [:button.btn.btn-info.btn-flat.btn-block.disabled "Judges"]
       [:button.btn.btn-info.btn-flat.btn-block.disabled "Speakers"]
