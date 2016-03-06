@@ -87,9 +87,8 @@
                    {:id           (str _id "-score")
                     :value        (get-in active-scores [team-id _id])
                     :on-change    (fn [e] (swap! app-state assoc-in [:active-scores team-id _id]
-                                                 (when (event-value e)
-                                                   (let [out (js/parseInt (event-value e))]
-                                                     (if (js/NaN out) 0 out)))))
+                                                 (when-not (empty? (event-value e))
+                                                   (js/parseInt (event-value e)))))
                     :on-key-press (fn [e]
                                     (let [cc (.-charCode e)]
                                       (and (>= cc 48)

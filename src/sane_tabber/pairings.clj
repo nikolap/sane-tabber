@@ -92,7 +92,7 @@
                  (second rest-groups)
                  (rest rest-groups)
                  (conj out (update test-group 1 conj (-> next-group second first)))))
-        out))))
+        (conj out test-group)))))
 
 (defn team-id-keyword [team]
   (-> team :_id str keyword))
@@ -162,17 +162,17 @@
                        (map team-map (base-group-teams teams)))]
     (->> paired-teams
          (room-assigner rooms)
-         (judge-looper (sort-by :rating > judges) scratches prev-round-data)
+         (judge-looper (sort-by :rating > (shuffle judges)) scratches prev-round-data)
          idify)))
 
 (defn pair-judges-only [judges rooms team-count teams-per-room]
-  (let [room-count (int (/ (count judges) (int (/ team-count teams-per-room))))
-        sorted-rooms (reverse (sort-by :accessible? rooms))
-        judge-groupings (reverse (sort-by #(some true? (map :accessible %))
-                                          (partition room-count (sort-by :rating judges))))]
-    (map (fn [judges room]
-           {:room   (:_id room)
-            :judges (map :_id judges)}) judge-groupings sorted-rooms)))
+  (reduce (fn [rrs judge]
+            (let [rr (first (sort-by (comp count :judges) rrs))]
+              (assoc rrs (.indexOf rrs rr) (update rr :judges conj (:_id judge)))))
+          (mapv (fn [r]
+                  {:room (:_id r)})
+                (take (int (/ team-count teams-per-room)) (reverse (sort-by :accessible? rooms))))
+          (reverse (sort-by :accessible? (sort-by :rating > (shuffle judges))))))
 
 (defn no-scratches? [{:keys [judges]} teams scratches]
   (not
