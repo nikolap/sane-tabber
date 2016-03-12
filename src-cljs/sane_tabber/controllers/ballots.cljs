@@ -19,7 +19,7 @@
   (apply + (vals (get active-scores team-id))))
 
 (defn get-team-points [active-scores team-id]
-  (index-of (map first (sort-by #(apply + (second (second %))) < active-scores)) team-id))
+  (index-of (map first (sort-by second (map #(into [] [(first %) (apply + (vals (second (first (second %)))))]) (group-by first active-scores)))) team-id))
 
 (defn send-ballot! [round-room ballot-data]
   (ws/send-transit-msg! (assoc round-room :ballot ballot-data) :round-rooms)
