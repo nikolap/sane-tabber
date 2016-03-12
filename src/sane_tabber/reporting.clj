@@ -93,7 +93,13 @@
 
 (defn round-ballots [])
 
-(defn export-teams [])
+(defn export-teams [all-teams all-speakers schools]
+  (let [header-keys [:team-name :speakers]
+        map-seq (map (fn [team]
+                       {:team-name (str (:name (get-by-id schools (:school-id team) :_id)) " " (:team-code team))
+                        :speakers  (clojure.string/join "," (map :name (filter #(= (:team-id %) (:_id team)) all-speakers)))})
+                     all-teams)]
+    (write-csv map-seq header-keys)))
 
 (defn export-judges [])
 
