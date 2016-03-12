@@ -9,7 +9,7 @@
             [sane-tabber.db.core :as db]
             [sane-tabber.utils :refer [stringify-reduce stringify-map wrap-transit-resp]]
             [sane-tabber.pairings :refer [pair-round pair-judges-only pair-teams-to-existing-rooms]]
-            [sane-tabber.reporting :refer [teams-tab speakers-tab round-pairings team-position-stats export-teams]]
+            [sane-tabber.reporting :refer [teams-tab speakers-tab round-pairings team-position-stats export-teams export-judges]]
             [sane-tabber.statistics :refer [pairing-stats]]))
 
 (defn app-page []
@@ -251,6 +251,14 @@
       (export-teams teams speakers schools)
       (file-name-prep tournament "-teams.csv"))))
 
+(defn judge-report [tid]
+  (log/info "Generating judge report for tournament" tid)
+  (let [tournament (db/get-tournament tid)
+        judges (db/get-judges tid)]
+    (as-csv
+      (export-judges judges)
+      (file-name-prep tournament "-judges.csv"))))
+
 (defn round-pairings-report [tid rid]
   (log/info "Generating round pairings for round" rid)
   (let [round (db/get-round rid)
@@ -335,6 +343,7 @@
                  (GET "/speaker-tab" [] (speaker-tab-report tid))
                  (GET "/team-stats" [] (team-stats-report tid))
                  (GET "/teams" [] (team-report tid))
+                 (GET "/judges" [] (judge-report tid))
                  (GET "/rounds/:rid/round-pairings" [rid] (round-pairings-report tid rid))
                  (GET "/rounds/:rid/round-ballots" [rid] (prn "asdf")))
                {:handler  editor?

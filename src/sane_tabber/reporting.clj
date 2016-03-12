@@ -76,7 +76,7 @@
                                 (range 1 (inc team-count)))))) teams)]
     (write-csv map-seq header-keys)))
 
-(defn round-pairings [rooms all-teams schools all-judges round-data tournament]
+(defn round-pairings [rooms all-teams schools all-judges round-data tournament speakers]
   (let [header-keys (generate-pairings-header (:team-count tournament))
         map-seq (map (fn [{:keys [room teams judges]}]
                        (apply
@@ -86,7 +86,8 @@
                          (map-indexed (fn [i [id _]]
                                         (let [team (get-by-id all-teams (db/object-id (name id)) :_id)]
                                           {(keyword (str "team-" (inc i)))
-                                           (str (:name (get-by-id schools (:school-id team) :_id)) " " (:team-code team))}))
+                                           (str (:name (get-by-id schools (:school-id team) :_id)) " " (:team-code team)
+                                                " (" (clojure.string/join ", " (map :name (filter #(= (:team-id %) (:_id team)) speakers))) ")")}))
                                       (sort-by second teams))))
                      round-data)]
     (write-csv map-seq header-keys)))
@@ -101,7 +102,8 @@
                      all-teams)]
     (write-csv map-seq header-keys)))
 
-(defn export-judges [])
+(defn export-judges [judges]
+  (write-csv judges [:name]))
 
 (defn export-speakers [])
 

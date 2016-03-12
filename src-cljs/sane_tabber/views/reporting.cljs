@@ -19,11 +19,14 @@
        {:href (str "/tournaments/" (session/get :tid) "/reports/team-stats")
         :target "_blank"}
        "Team Position Info"]
-      [:button.btn.btn-info.btn-flat.btn-block
+      [:a.btn.btn-info.btn-flat.btn-block
        {:href (str "/tournaments/" (session/get :tid) "/reports/teams")
         :target "_blank"}
        "Teams"]
-      [:button.btn.btn-info.btn-flat.btn-block.disabled "Judges"]
+      [:a.btn.btn-info.btn-flat.btn-block
+       {:href (str "/tournaments/" (session/get :tid) "/reports/judges")
+        :target "_blank"}
+       "Judges"]
       [:button.btn.btn-info.btn-flat.btn-block.disabled "Speakers"]
       [:button.btn.btn-info.btn-flat.btn-block.disabled "Schools"]
       [:button.btn.btn-info.btn-flat.btn-block.disabled "Rooms"]]]]])
