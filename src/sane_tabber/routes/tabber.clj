@@ -267,8 +267,9 @@
         schools (db/get-schools tid)
         judges (db/get-judges tid)
         round-data (db/get-round-rooms rid)
-        tournament (db/get-tournament tid)]
-    (as-csv (round-pairings rooms teams schools judges round-data tournament)
+        tournament (db/get-tournament tid)
+        speakers (db/get-speakers tid)]
+    (as-csv (round-pairings rooms teams schools judges round-data tournament speakers)
             (file-name-prep tournament (str "-round-" (:round-number round) "-pairings.csv")))))
 
 (defn restriction [allowed?]
