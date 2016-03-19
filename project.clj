@@ -36,7 +36,8 @@
                  [luminus-immutant "0.1.1"]
                  [prismatic/dommy "1.1.0"]
                  [org.clojure/data.csv "0.1.3"]
-                 [clojure-csv/clojure-csv "2.0.2"]]
+                 [clojure-csv/clojure-csv "2.0.2"]
+                 [re-frame "0.7.0"]]
 
   :min-lein-version "2.0.0"
   :uberjar-name "sane-tabber.jar"

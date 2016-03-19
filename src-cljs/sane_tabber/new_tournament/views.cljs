@@ -1,6 +1,6 @@
-(ns sane-tabber.views.new-tournament
-  (:require [sane-tabber.views.generic :refer [input-form-element select-form-element]]
-            [sane-tabber.controllers.new-tournament :refer [submit-new-tournament errors]]))
+(ns sane-tabber.new-tournament.views
+  (:require [sane-tabber.generic.views :refer [input-form-element select-form-element]]
+            [re-frame.core :refer [subscribe dispatch]]))
 
 (defn new-tournament-header []
   [:section.content-header
@@ -24,7 +24,7 @@
 (defn new-tournament-footer []
   [:div.box-footer>button.btn.btn-primary.btn-flat
    {:type     "button"
-    :on-click submit-new-tournament}
+    :on-click #(dispatch [:submit-new-tournament])}
    "Submit"])
 
 (defn template-box []
@@ -45,13 +45,15 @@
      [:a.btn.btn-sm.btn-info.btn-flat {:href "/csv/teams-template.csv"} "Teams"]]]])
 
 (defn new-tournament-body []
-  [:section.content>div.row
-   [:div.col-sm-6>div.box.box-primary
-    [:div.box-header.with-border
-     [:h3.box-title "New Tournament"]]
-    [new-tournament-form @errors]
-    [new-tournament-footer]]
-   [template-box]])
+  (let [errors (subscribe [:errors])]
+    (fn []
+      [:section.content>div.row
+       [:div.col-sm-6>div.box.box-primary
+        [:div.box-header.with-border
+         [:h3.box-title "New Tournament"]]
+        [new-tournament-form @errors]
+        [new-tournament-footer]]
+       [template-box]])))
 
 (defn new-tournament-page []
   [:div

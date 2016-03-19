@@ -1,4 +1,4 @@
-(ns sane-tabber.views.dashboard)
+(ns sane-tabber.dashboard.views)
 
 (defn dashboard-page []
   [:p "work in progress"])

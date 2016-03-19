@@ -105,7 +105,8 @@
 (defn export-judges [judges]
   (write-csv judges [:name]))
 
-(defn export-speakers [])
+(defn export-speakers []
+  )
 
 (defn export-schools [])
 

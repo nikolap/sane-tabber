@@ -8,7 +8,15 @@
             [sane-tabber.routes :refer [page]]
             [sane-tabber.session :refer [app-state]]
             [sane-tabber.websockets :as ws]
-            [sane-tabber.views.navigation :refer [sidebar]])
+            [sane-tabber.navigation.views :refer [sidebar]]
+            [re-frame.core :refer [dispatch-sync]]
+
+            [sane-tabber.generic.handlers]
+            [sane-tabber.generic.subs]
+            [sane-tabber.home.handlers]
+            [sane-tabber.new-tournament.handlers]
+            [sane-tabber.settings.handlers]
+            [sane-tabber.settings.subs])
   (:import goog.History))
 
 (defn hook-browser-navigation! []
@@ -16,7 +24,7 @@
     (events/listen
       EventType/NAVIGATE
       (fn [event]
-        (reset! app-state {})
+        (dispatch-sync [:init-db])
         (ws/reset-channels!)
         (secretary/dispatch! (.-token event))))
     (.setEnabled true)))

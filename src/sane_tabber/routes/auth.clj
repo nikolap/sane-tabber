@@ -63,10 +63,10 @@
 
 (defn register! [data session]
   (log/info (:username data) "attempting to register")
-  (let [[errors form-data] (validate-registration data)]
+  (let [[errors _] (validate-registration data)]
     (if errors
       (register-page (-> errors first val))
-      (authenticate session (:username (db/create-user (dissoc data :__anti-forgery-token)))))))
+      (authenticate session (:username (db/create-user (dissoc data :__anti-forgery-token :verify-password)))))))
 
 (defn generate-forgot-link [host user]
   (str "http://" host "/reset-password?token=" (:token (db/create-reset user))))
