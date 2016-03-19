@@ -105,7 +105,7 @@
 (secretary/defroute "/:tid/reporting" [tid]
                     (session/put! :tid tid)
                     (dispatch [:set-active-tournament tid])
-                    (session/put! :page :reporting))
+                    (dispatch [:set-active-page :reporting]))
 (secretary/defroute "/:tid/editor/rooms" [tid]
                     (session/put! :tid tid)
                     (dispatch [:set-active-tournament tid])
