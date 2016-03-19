@@ -15,6 +15,7 @@
             [sane-tabber.generic.subs]
             [sane-tabber.home.handlers]
             [sane-tabber.new-tournament.handlers]
+            [sane-tabber.rounds.handlers]
             [sane-tabber.settings.handlers]
             [sane-tabber.settings.subs])
   (:import goog.History))

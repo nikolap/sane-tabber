@@ -13,10 +13,10 @@
             [sane-tabber.new-tournament.views :refer [new-tournament-page]]
             [sane-tabber.dashboard.views :refer [dashboard-page]]
             [sane-tabber.views.registration :refer [registration-page]]
-            [sane-tabber.views.rounds :refer [rounds-page]]
+            [sane-tabber.rounds.views :refer [rounds-page]]
             [sane-tabber.views.pairings :refer [pairings-page]]
             [sane-tabber.views.ballots :refer [ballots-page]]
-            [sane-tabber.views.reporting :refer [reporting-page]]
+            [sane-tabber.reporting.views :refer [reporting-page]]
             [sane-tabber.views.editors.rooms :refer [rooms-editor-page]]
             [sane-tabber.views.editors.judges :refer [judges-editor-page]]
             [sane-tabber.views.editors.teams :refer [teams-editor-page]]
@@ -103,7 +103,6 @@
                     (basic-get (str "/ajax/tournaments/" tid "/speakers") :speakers)
                     (dispatch [:set-active-page :ballots]))
 (secretary/defroute "/:tid/reporting" [tid]
-                    (session/put! :tid tid)
                     (dispatch [:set-active-tournament tid])
                     (dispatch [:set-active-page :reporting]))
 (secretary/defroute "/:tid/editor/rooms" [tid]
