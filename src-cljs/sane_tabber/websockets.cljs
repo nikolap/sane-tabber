@@ -18,7 +18,10 @@
     (throw (js/Error. "Websocket is not available!"))))
 
 (defn make-websocket! [url receive-handler & [path]]
-  (if-let [chan (js/WebSocket. url)]
+  (if-let [chan (js/WebSocket. (-> js/location
+                                   .-protocol
+                                   (clojure.string/replace "http" "ws")
+                                   (str "//" (.-host js/location) url)))]
     (do
       (set! (.-onmessage chan) (receive-transit-msg! receive-handler))
       (swap! ws-chan assoc (if path path :default) chan))

@@ -16,6 +16,9 @@
             [sane-tabber.home.handlers]
             [sane-tabber.new-tournament.handlers]
             [sane-tabber.rounds.handlers]
+            [sane-tabber.editors.rooms.handlers]
+            [sane-tabber.editors.teams.handlers]
+            [sane-tabber.editors.judges.handlers]
             [sane-tabber.settings.handlers]
             [sane-tabber.settings.subs])
   (:import goog.History))
@@ -37,6 +40,3 @@
 (defn init! []
   (hook-browser-navigation!)
   (mount-components))
-
-(defn set-ws-base [base]
-  (session/put! :ws-base base))

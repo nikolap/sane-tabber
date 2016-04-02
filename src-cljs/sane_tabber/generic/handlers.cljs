@@ -1,6 +1,7 @@
 (ns sane-tabber.generic.handlers
   (:require [re-frame.core :refer [register-handler dispatch]]
             [ajax.core :refer [GET POST]]
+            [sane-tabber.websockets :as ws]
             [sane-tabber.utils :refer [id-value dispatch!]]))
 
 (defn kw-prefix [kw prefix]
@@ -27,6 +28,13 @@
      uri
      (kw-prefix k "get-")
      k)))
+
+(defn basic-tournament-get [uri-fn kw]
+  (register-handler
+    (kw-prefix kw "get-")
+    (fn [db [_ tid]]
+      (dispatch [:basic-get (uri-fn tid) kw])
+      db)))
 
 (register-handler
   :init-db
@@ -68,27 +76,9 @@
     db))
 
 (register-handler
-  :get-users
-  (fn [db [_ tid]]
-    (dispatch [:basic-get (str "/ajax/tournaments/" tid "/users") :users])
-    db))
-
-(register-handler
-  :get-tournament
-  (fn [db [_ tid]]
-    (dispatch [:basic-get (str "/ajax/tournaments/" tid "/") :tournament])
-    db))
-
-(register-handler
-  :get-teams
-  (fn [db [_ tid]]
-    (dispatch [:basic-get (str "/ajax/tournaments/" tid "/teams") :teams])
-    db))
-
-(register-handler
-  :get-rounds
-  (fn [db [_ tid]]
-    (dispatch [:basic-get (str "/ajax/tournaments/" tid "/rounds") :rounds])
+  :send-transit-toggle
+  (fn [db [_ item k path]]
+    (ws/send-transit-msg! (update item k not) path)
     db))
 
 (basic-set-handler :active-page)
@@ -97,3 +87,8 @@
 (basic-set-handler :tooltip-data)
 
 (basic-get-handler "ajax/tournaments" :tournaments)
+(basic-tournament-get #(str "/ajax/tournaments/" % "/") :tournament)
+(basic-tournament-get #(str "/ajax/tournaments/" % "/users") :users)
+(basic-tournament-get #(str "/ajax/tournaments/" % "/teams") :teams)
+(basic-tournament-get #(str "/ajax/tournaments/" % "/rounds") :rounds)
+(basic-tournament-get #(str "/ajax/tournaments/" % "/rooms") :rooms)
