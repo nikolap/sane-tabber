@@ -12,7 +12,7 @@
         [:th "Status"]
         [:th "Actions"]]
        [:tbody
-        (for [{:keys [_id round-number status] :as round} (sort-by :round-number rounds)]
+        (for [{:keys [_id round-number status] :as round} (sort-by :round-number @rounds)]
           ^{:key _id}
           [:tr
            [:td round-number]
@@ -26,11 +26,11 @@
              {:type     "button"
               :on-click #(dispatch [:auto-pair-click _id status :auto-pair-round])}
              "Auto Pair"]
-            [:button.btn.btn-info.btn-xs.btn-flat
+            #_[:button.btn.btn-info.btn-xs.btn-flat
              {:type     "button"
               :on-click #(dispatch [:auto-pair-click _id status :auto-pair-judges])}
              "Auto Pair (JUDGES FIRST)"]
-            [:button.btn.btn-info.btn-xs.btn-flat
+            #_[:button.btn.btn-info.btn-xs.btn-flat
              {:type     "button"
               :disabled (not= "partial" status)
               :on-click #(dispatch [:auto-pair-click _id status :auto-pair-teams])}

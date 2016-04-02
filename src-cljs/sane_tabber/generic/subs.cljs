@@ -22,3 +22,4 @@
 (basic-get-sub :tournaments)
 (basic-get-sub :tournament)
 (basic-get-sub :tooltip-data)
+(basic-get-sub :rounds)

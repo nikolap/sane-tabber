@@ -69,10 +69,9 @@
                     (dispatch [:set-active-page :registration]))
 (secretary/defroute "/:tid/pairings" [tid]
                     (dispatch [:set-active-tournament tid])
-                    (session/put! :tid tid)
-                    (basic-get (str "/ajax/tournaments/" tid "/rounds") :rounds)
-                    (basic-get (str "/ajax/tournaments/" tid "/") :tournament)
-                    (basic-get (str "/ajax/tournaments/" tid "/teams") :teams)
+                    (dispatch [:get-tournament tid])
+                    (dispatch [:get-rounds tid])
+                    (dispatch [:get-teams :tid])
                     (dispatch [:set-active-page :rounds]))
 (secretary/defroute "/:tid/pairings/:rid" [tid rid]
                     (dispatch [:set-active-tournament tid])

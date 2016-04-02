@@ -79,6 +79,18 @@
     (dispatch [:basic-get (str "/ajax/tournaments/" tid "/") :tournament])
     db))
 
+(register-handler
+  :get-teams
+  (fn [db [_ tid]]
+    (dispatch [:basic-get (str "/ajax/tournaments/" tid "/teams") :teams])
+    db))
+
+(register-handler
+  :get-rounds
+  (fn [db [_ tid]]
+    (dispatch [:basic-get (str "/ajax/tournaments/" tid "/rounds") :rounds])
+    db))
+
 (basic-set-handler :active-page)
 (basic-set-handler :active-tournament)
 (basic-set-handler :tournament)
