@@ -37,6 +37,12 @@
       db)))
 
 (register-handler
+  :ws-update
+  (fn [db [_ item new-val k ws-kw]]
+    (ws/send-transit-msg! (assoc item k new-val) ws-kw)
+    db))
+
+(register-handler
   :init-db
   (fn [_ _]
     {:x-csrf-token        (id-value :#__anti-forgery-token)}))
@@ -92,3 +98,7 @@
 (basic-tournament-get #(str "/ajax/tournaments/" % "/teams") :teams)
 (basic-tournament-get #(str "/ajax/tournaments/" % "/rounds") :rounds)
 (basic-tournament-get #(str "/ajax/tournaments/" % "/rooms") :rooms)
+(basic-tournament-get #(str "/ajax/tournaments/" % "/judges") :judges)
+(basic-tournament-get #(str "/ajax/tournaments/" % "/scratches") :scratches)
+(basic-tournament-get #(str "/ajax/tournaments/" % "/schools") :schools)
+(basic-tournament-get #(str "/ajax/tournaments/" % "/speakers") :speakers)

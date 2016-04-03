@@ -1,6 +1,12 @@
 (ns sane-tabber.generic.data
   (:require [sane-tabber.utils :refer [filter-first remove-when]]))
 
+(defn get-multi
+  ([coll id id-key]
+   (filter #(= (id-key %) id) coll))
+  ([coll k id id-key]
+   (get-multi (get coll k) id id-key)))
+
 (defn get-by-id
   ([coll id id-key]
    (filter-first #(= (get % id-key) id) coll))

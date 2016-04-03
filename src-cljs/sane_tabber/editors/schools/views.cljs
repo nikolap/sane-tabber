@@ -1,4 +1,4 @@
-(ns sane-tabber.views.editors.schools)
+(ns sane-tabber.editors.schools.views)
 
 (defn schools-editor-page []
   [:section.content>div.row

@@ -6,7 +6,7 @@
 (def tooltip-x-offset 364)
 (def tooltip-y-offset 128)
 
-(defn tooltip [{:keys [left top header parent-item items new-items]} on-click-handler]
+(defn tooltip [{:keys [left top header parent-item items new-items]} on-click-fn]
   (let [select-val (reagent/atom nil)]
     (fn [{:keys [left top header parent-item items new-items]} on-click-handler]
       (if (and left top)
@@ -26,6 +26,6 @@
             [:option {:value _id} name])]
          [:button.btn.btn-success.btn-xs.btn-flat
           {:type     "button"
-           :on-click #(dispatch [on-click-handler @select-val parent-item new-items])}
+           :on-click #(on-click-fn @select-val parent-item new-items)}
           [:i.fa.fa-plus] "Add"]]
         [:div]))))

@@ -1,55 +1,6 @@
 (ns sane-tabber.statistics
   (:require [sane-tabber.utils :refer [filter-first]]))
 
-;; Round room structure
-;{:judges [ids...]
-;   :room   id
-;   :teams  {:id position-num
-;            :id position-num
-;            ...}
-;   :ballot {:teams    {:id {:points n
-;                            :score  n}}
-;            :speakers {:id score}
-; :tournament-id id
-; :round-id id}}
-
-(def test-data [{:judges [1 2]
-                 :teams {1 1
-                         2 2}
-                 :ballot {:teams    {1 {:points 1 :score 84}
-                                       2 {:points 0 :score 78}}
-                            :speakers {1 33
-                                       2 42
-                                       3 62
-                                       4 79}}}
-                  {:judges [1 2]
-                   :teams {1 1
-                           2 2}
-                   :ballot {:teams    {1 {:points 1 :score 84}
-                                       2 {:points 0 :score 78}}
-                            :speakers {1 33
-                                       2 42
-                                       3 62
-                                       4 79}}}
-                  {:judges [1 2]
-                   :teams {1 1
-                           2 2}
-                   :ballot {:teams    {1 {:points 1 :score 84}
-                                       2 {:points 0 :score 78}}
-                            :speakers {1 33
-                                       2 42
-                                       3 62
-                                       4 79}}}
-                  {:judges [1 2]
-                   :teams {1 1
-                           2 2}
-                   :ballot {:teams    {1 {:points 1 :score 84}
-                                       2 {:points 0 :score 78}}
-                            :speakers {1 33
-                                       2 42
-                                       3 62
-                                       4 79}}}])
-
 (defn ballot-filter [k v]
   (filter #(contains? (-> %
                           (get-in [:ballot k])

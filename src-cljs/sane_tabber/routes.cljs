@@ -18,9 +18,9 @@
             [sane-tabber.views.ballots :refer [ballots-page]]
             [sane-tabber.reporting.views :refer [reporting-page]]
             [sane-tabber.editors.rooms.views :refer [rooms-editor-page]]
-            [sane-tabber.views.editors.judges :refer [judges-editor-page]]
-            [sane-tabber.views.editors.teams :refer [teams-editor-page]]
-            [sane-tabber.views.editors.schools :refer [schools-editor-page]]
+            [sane-tabber.editors.judges.views :refer [judges-editor-page]]
+            [sane-tabber.editors.teams.views :refer [teams-editor-page]]
+            [sane-tabber.editors.schools.views :refer [schools-editor-page]]
             [sane-tabber.settings.views :refer [settings-page]]
             [re-frame.core :refer [subscribe dispatch]]))
 
@@ -110,27 +110,24 @@
                     (ws/make-websocket! (str "/ws/" tid "/editor/rooms") #(dispatch [:update-rooms %]))
                     (dispatch [:set-active-page :room-editor]))
 (secretary/defroute "/:tid/editor/judges" [tid]
-                    (session/put! :tid tid)
                     (dispatch [:set-active-tournament tid])
-                    (basic-get (str "/ajax/tournaments/" tid "/judges") :judges)
-                    (basic-get (str "/ajax/tournaments/" tid "/teams") :teams)
-                    (basic-get (str "/ajax/tournaments/" tid "/scratches") :scratches)
-                    (basic-get (str "/ajax/tournaments/" tid "/schools") :schools)
-                    (ws/make-websocket! (str "/ws/" tid "/editor/judges") update-judges! :judges)
-                    (ws/make-websocket! (str "/ws/" tid "/editor/scratches") update-scratches! :scratches)
+                    (dispatch [:get-judges tid])
+                    (dispatch [:get-teams tid])
+                    (dispatch [:get-scratches tid])
+                    (dispatch [:get-schools tid])
+                    (ws/make-websocket! (str "/ws/" tid "/editor/judges") #(dispatch [:update-judges %]) :judges)
+                    (ws/make-websocket! (str "/ws/" tid "/editor/scratches") #(dispatch [:update-scratches %]) :scratches)
                     (dispatch [:set-active-page :judge-editor]))
 (secretary/defroute "/:tid/editor/teams" [tid]
-                    (session/put! :tid tid)
                     (dispatch [:set-active-tournament tid])
-                    (basic-get (str "/ajax/tournaments/" tid "/") :tournament)
-                    (basic-get (str "/ajax/tournaments/" tid "/teams") :teams)
-                    (basic-get (str "/ajax/tournaments/" tid "/schools") :schools)
-                    (basic-get (str "/ajax/tournaments/" tid "/speakers") :speakers)
-                    (ws/make-websocket! (str "/ws/" tid "/editor/teams") update-teams! :teams)
-                    (ws/make-websocket! (str "/ws/" tid "/editor/speakers") update-speakers! :speakers)
+                    (dispatch [:get-tournament tid])
+                    (dispatch [:get-teams tid])
+                    (dispatch [:get-schools tid])
+                    (dispatch [:get-speakers tid])
+                    (ws/make-websocket! (str "/ws/" tid "/editor/teams") #(dispatch [:update-teams %]) :teams)
+                    (ws/make-websocket! (str "/ws/" tid "/editor/speakers") #(dispatch [:update-speakers %]) :speakers)
                     (dispatch [:set-active-page :team-editor]))
 (secretary/defroute "/:tid/editor/schools" [tid]
-                    (session/put! :tid tid)
                     (dispatch [:set-active-tournament tid])
                     (dispatch [:set-active-page :school-editor]))
 (secretary/defroute "/:tid/settings" [tid]
