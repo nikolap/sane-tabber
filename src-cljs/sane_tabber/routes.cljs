@@ -12,7 +12,7 @@
             [sane-tabber.home.views :refer [home-page]]
             [sane-tabber.new-tournament.views :refer [new-tournament-page]]
             [sane-tabber.dashboard.views :refer [dashboard-page]]
-            [sane-tabber.views.registration :refer [registration-page]]
+            [sane-tabber.registration.views :refer [registration-page]]
             [sane-tabber.rounds.views :refer [rounds-page]]
             [sane-tabber.views.pairings :refer [pairings-page]]
             [sane-tabber.views.ballots :refer [ballots-page]]
@@ -56,16 +56,14 @@
                     (dispatch [:set-active-page :dashboard]))
 (secretary/defroute "/:tid/registration" [tid]
                     (dispatch [:set-active-tournament tid])
-                    (session/put! :tid tid)
-                    (basic-get (str "/ajax/tournaments/" tid "/") :tournament)
-                    (basic-get (str "/ajax/tournaments/" tid "/teams") :teams)
-                    (basic-get (str "/ajax/tournaments/" tid "/schools") :schools)
-                    (basic-get (str "/ajax/tournaments/" tid "/judges") :judges)
-                    (basic-get (str "/ajax/tournaments/" tid "/speakers") :speakers)
-                    (ws/make-websocket! (str "/ws/" tid "/editor/teams") update-teams! :teams)
-                    (ws/make-websocket! (str "/ws/" tid "/editor/speakers") update-speakers! :speakers)
-                    (ws/make-websocket! (str "/ws/" tid "/editor/judges") update-judges! :judges)
-                    (ws/make-websocket! (str "/ws/" tid "/editor/scratches") update-scratches! :scratches)
+                    (dispatch [:get-tournament tid])
+                    (dispatch [:get-teams tid])
+                    (dispatch [:get-schools tid])
+                    (dispatch [:get-judges tid])
+                    (dispatch [:get-speakers tid])
+                    (ws/make-websocket! (str "/ws/" tid "/editor/teams") #(dispatch [:update-teams %]) :teams)
+                    (ws/make-websocket! (str "/ws/" tid "/editor/speakers") #(dispatch [:update-speakers %]) :speakers)
+                    (ws/make-websocket! (str "/ws/" tid "/editor/judges") #(dispatch [:update-judges %]) :judges)
                     (dispatch [:set-active-page :registration]))
 (secretary/defroute "/:tid/pairings" [tid]
                     (dispatch [:set-active-tournament tid])
