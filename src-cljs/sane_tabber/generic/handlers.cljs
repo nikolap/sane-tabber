@@ -2,7 +2,8 @@
   (:require [re-frame.core :refer [register-handler dispatch]]
             [ajax.core :refer [GET POST]]
             [sane-tabber.websockets :as ws]
-            [sane-tabber.utils :refer [id-value dispatch!]]))
+            [sane-tabber.utils :refer [id-value dispatch!]]
+            [sane-tabber.generic.data :refer [add-or-update]]))
 
 (defn kw-prefix [kw prefix]
   (->> kw name (str prefix) keyword))
@@ -89,6 +90,7 @@
 
 (basic-set-handler :active-page)
 (basic-set-handler :active-tournament)
+(basic-set-handler :active-round)
 (basic-set-handler :tournament)
 (basic-set-handler :tooltip-data)
 
@@ -102,3 +104,20 @@
 (basic-tournament-get #(str "/ajax/tournaments/" % "/scratches") :scratches)
 (basic-tournament-get #(str "/ajax/tournaments/" % "/schools") :schools)
 (basic-tournament-get #(str "/ajax/tournaments/" % "/speakers") :speakers)
+
+(register-handler
+  :get-round-rooms
+  (fn [db [_ tid rid]]
+    (dispatch [:basic-get (str "/ajax/tournaments/" tid "/" rid "/round-rooms") :round-rooms])
+    db))
+
+(register-handler
+  :update-round-rooms
+  (fn [db [_ round-room]]
+    (add-or-update db :round-rooms round-room :_id)))
+
+(register-handler
+  :get-stats
+  (fn [db [_ tid rid]]
+    (dispatch [:basic-get (str "/ajax/tournaments/" tid "/" rid "/pairing-stats") :stats])
+    db))
