@@ -43,7 +43,6 @@
   (if (coll? item) (mapv object-id item) (object-id item)))
 
 (defn object-idify [m ks]
-  (prn m ks)
   (reduce #(update-in %1 [%2] oid-conv) m ks))
 
 (defn get-by-tid [coll tid & [args]]

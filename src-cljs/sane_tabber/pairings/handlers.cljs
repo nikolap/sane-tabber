@@ -17,7 +17,7 @@
     db))
 
 (register-handler
-  :submit-new-team
+  :submit-new-team-pairings
   (fn [db [_ judges]]
     (let [new-rr-room (id-value :#new-rr-room)
           new-rr-teams (map dom/value (sel ".new-team-select"))

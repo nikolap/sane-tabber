@@ -7,6 +7,7 @@
             [sane-tabber.new-tournament.views :refer [new-tournament-page]]
             [sane-tabber.dashboard.views :refer [dashboard-page]]
             [sane-tabber.registration.views :refer [registration-page]]
+            [sane-tabber.registration-view.views :refer [registration-view-page]]
             [sane-tabber.rounds.views :refer [rounds-page]]
             [sane-tabber.pairings.views :refer [pairings-page]]
             [sane-tabber.ballots.views :refer [ballots-page]]
@@ -20,19 +21,20 @@
 (secretary/set-config! :prefix "#")
 
 (def pages
-  {:home           #'home-page
-   :new-tournament #'new-tournament-page
-   :dashboard      #'dashboard-page
-   :registration   #'registration-page
-   :rounds         #'rounds-page
-   :pairings       #'pairings-page
-   :ballots        #'ballots-page
-   :reporting      #'reporting-page
-   :room-editor    #'rooms-editor-page
-   :judge-editor   #'judges-editor-page
-   :team-editor    #'teams-editor-page
-   :school-editor  #'schools-editor-page
-   :settings       #'settings-page})
+  {:home              #'home-page
+   :new-tournament    #'new-tournament-page
+   :dashboard         #'dashboard-page
+   :registration      #'registration-page
+   :registration-view #'registration-view-page
+   :rounds            #'rounds-page
+   :pairings          #'pairings-page
+   :ballots           #'ballots-page
+   :reporting         #'reporting-page
+   :room-editor       #'rooms-editor-page
+   :judge-editor      #'judges-editor-page
+   :team-editor       #'teams-editor-page
+   :school-editor     #'schools-editor-page
+   :settings          #'settings-page})
 
 (defn page []
   (let [active (subscribe [:active-page])]
@@ -58,6 +60,15 @@
                     (ws/make-websocket! (str "/ws/" tid "/editor/speakers") #(dispatch [:update-speakers %]) :speakers)
                     (ws/make-websocket! (str "/ws/" tid "/editor/judges") #(dispatch [:update-judges %]) :judges)
                     (dispatch [:set-active-page :registration]))
+(secretary/defroute "/:tid/registration-view" [tid]
+                    (dispatch [:set-active-tournament tid])
+                    (dispatch [:get-tournament tid])
+                    (dispatch [:get-teams tid])
+                    (dispatch [:get-schools tid])
+                    (dispatch [:get-speakers tid])
+                    (ws/make-websocket! (str "/ws/" tid "/editor/teams") #(dispatch [:update-teams %]) :teams)
+                    (ws/make-websocket! (str "/ws/" tid "/editor/speakers") #(dispatch [:update-speakers %]) :speakers)
+                    (dispatch [:set-active-page :registration-view]))
 (secretary/defroute "/:tid/pairings" [tid]
                     (dispatch [:set-active-tournament tid])
                     (dispatch [:get-tournament tid])

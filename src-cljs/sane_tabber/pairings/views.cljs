@@ -11,7 +11,7 @@
   (let [judges (subscribe [:judges])]
     (when-let [judge (get-by-id @judges select-value :_id)]
       (if round-room-id
-        (dispatch [:add-rr-judge round-room-id select-value]) ;; todo
+        (dispatch [:add-rr-judge round-room-id select-value])
         (swap! new-judges conj judge))
       (dispatch [:set-tooltip-data nil]))))
 
@@ -39,7 +39,7 @@
    [:a>i.remove.glyphicon.glyphicon-remove-sign.glyphicon-white
     {:on-click #(if removal-coll
                  (swap! removal-coll disj judge)
-                 (dispatch [:remove-rr-judge rr-id _id]))}]]) ;; todo
+                 (dispatch [:remove-rr-judge rr-id _id]))}]])
 
 (defn pairings-head [{:keys [team-count settings]}]
   [:thead>tr
@@ -78,7 +78,7 @@
 
           [:button.btn.btn-primary.btn-xs.btn-flat.pull-right
            {:type     "button"
-            :on-click #(dispatch [:submit-new-team new-round-judges])} ;; todo
+            :on-click #(dispatch [:submit-new-team-pairings new-round-judges])}
            "Add Room"
            [:i.fa.fa-plus]]]]))))
 
@@ -170,9 +170,10 @@
         [:div.box.box-primary
          [:div.box-header.with-border>h3.box-title "Pairings"]
          [:a.btn.btn-primary.btn-flat
-          {:href   (str "/tournaments/" tid "/reports/rounds/" rid "/round-pairings")
+          {:href   (str "/tournaments/" @tid "/reports/rounds/" @rid "/round-pairings")
            :target "_new"}
           "Export"]
+         ;; maybe todo... or think of a better way to do it
          #_[:button.btn.btn-info.btn-flat
           {:type     "button"
            :on-click #(dispatch [:toggle-show-stats])}

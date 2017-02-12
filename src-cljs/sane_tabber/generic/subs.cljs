@@ -52,7 +52,6 @@
 (basic-get-sub :scratches)
 (basic-get-sub :speakers)
 (basic-get-sub :round-rooms)
-(basic-get-sub :rounds)
 (basic-get-sub :stats)
 (basic-get-sub :show-stats?)
 

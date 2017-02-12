@@ -21,6 +21,7 @@
           [:li.header "TOURNAMENT"]
           [nav-link (str "#/" tid "/dashboard") "Dashboard" "fa-dashboard" :dashboard @active-page]
           [nav-link (str "#/" tid "/registration") "Registration" "fa-clipboard" :registration @active-page]
+          [nav-link (str "#/" tid "/registration-view") "Registration Review" "fa-tv" :registration-view @active-page]
           [nav-link (str "#/" tid "/pairings") "Pairings" "fa-group" :pairings @active-page]
           [nav-link (str "#/" tid "/ballots") "Ballots" "fa-gavel" :ballots @active-page]
           [nav-link (str "#/" tid "/reporting") "Reporting" "fa-newspaper-o" :reporting @active-page]
