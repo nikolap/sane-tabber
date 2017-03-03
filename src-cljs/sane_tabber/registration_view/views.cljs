@@ -14,7 +14,8 @@
                 :top "0px"
                 :z-index 99999
                 :height "100%"
-                :background-color "#FFF"}}
+                :background-color "#FFF"
+                :overflow-y "scroll"}}
        [:h3 "If you see yourselves on this list as not signed in, please visit the registration desk as soon as possible."]
 
        [:table.table.table-striped.table-condensed.table-hover.table-fixed
