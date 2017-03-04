@@ -168,7 +168,6 @@
                        (map team-map (base-group-teams teams)))]
     (->> paired-teams
          (room-assigner rooms)
-         (map (partial clean-string :rating))
          (judge-looper (sort-by :rating > (shuffle judges)) scratches prev-round-data)
          idify)))
 

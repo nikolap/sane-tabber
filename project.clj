@@ -131,9 +131,7 @@
                                                 {:optimizations    :advanced
                                                  :pretty-print     false
                                                  :closure-warnings {:externs-validation :off
-                                                                    :non-standard-jsdoc :off}}}}}
-                   :prep-tasks ["clean"
-                                "compile" ["cljsbuild" "once"]]}
+                                                                    :non-standard-jsdoc :off}}}}}}
    :profiles/dev  {}
    :profiles/test {}
    :profiles/prod {}})

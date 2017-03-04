@@ -8,7 +8,7 @@
             [sane-tabber.layout :as layout]
             [sane-tabber.db.core :as db]
             [sane-tabber.utils :refer [stringify-reduce stringify-map wrap-transit-resp]]
-            [sane-tabber.pairings :refer [pair-round pair-judges-only pair-teams-to-existing-rooms]]
+            [sane-tabber.pairings :refer [pair-round pair-judges-only pair-teams-to-existing-rooms clean-string]]
             [sane-tabber.reporting :refer [teams-tab speakers-tab round-pairings team-position-stats export-teams export-judges]]
             [sane-tabber.statistics :refer [pairing-stats]]))
 
@@ -153,7 +153,7 @@
   (log/info "Autopairing round for tournament" tid "and round" rid)
   (db/clear-round-room-data rid)
   (let [teams (db/get-active-teams tid)
-        judges (db/get-active-judges tid)
+        judges (map (partial clean-string :rating) (db/get-active-judges tid))
         rooms (db/get-active-rooms tid)
         scratches (db/get-scratches tid)
         round-rooms (db/get-all-scored-round-rooms tid)
@@ -166,7 +166,7 @@
   (log/info "Autopairing judges only for tournament" tid "and round" rid)
   (db/clear-round-room-data rid)
   (let [teams (db/get-active-teams tid)
-        judges (db/get-active-judges tid)
+        judges (map (partial clean-string :rating) (db/get-active-judges tid))
         rooms (db/get-active-rooms tid)
         tournament (db/get-tournament tid)
         round (db/get-round rid)]
