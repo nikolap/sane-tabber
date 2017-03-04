@@ -157,12 +157,18 @@
              (update :judges #(map :_id %))))
        round-rooms))
 
+(defn clean-string [kw entry]
+  (update entry kw #(if (string? %)
+                      (read-string %)
+                      %)))
+
 (defn pair-round [teams judges rooms scratches prev-round-data]
   (let [paired-teams (if (not-empty prev-round-data)
                        (bracket-teams teams prev-round-data)
                        (map team-map (base-group-teams teams)))]
     (->> paired-teams
          (room-assigner rooms)
+         (map (partial clean-string :rating))
          (judge-looper (sort-by :rating > (shuffle judges)) scratches prev-round-data)
          idify)))
 
