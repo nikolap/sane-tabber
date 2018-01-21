@@ -1,6 +1,7 @@
 (ns sane-tabber.layout
   (:require [selmer.parser :as parser]
-            [ring.util.http-response :refer [content-type ok]]
+            [ring.util.http-response :refer [ok]]
+            [ring.util.response :refer [content-type]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]
             [ring.middleware.anti-forgery :refer [*anti-forgery-token*]]
             [config.core :refer [env]]))

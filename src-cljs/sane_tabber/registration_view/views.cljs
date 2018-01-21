@@ -25,7 +25,8 @@
          [:th "Signed in?"]]
         [:tbody
          (doall
-           (for [{:keys [_id signed-in?] :as team} (sort-by (juxt :signed-in? :school-id :team-code) @teams)
+           (for [{:keys [_id signed-in?] :as team} (sort-by (juxt :signed-in? :school-id :team-code)
+                                                            (filter (comp not :dropped?) @teams))
                  :let [team-speakers (get-multi @speakers _id :team-id)]]
              ^{:key _id}
              [:tr

@@ -18,9 +18,9 @@
 
 (register-handler
   :submit-new-team-pairings
-  (fn [db [_ judges]]
+  (fn [db [_ judges teams]]
     (let [new-rr-room (id-value :#new-rr-room)
-          new-rr-teams (map dom/value (sel ".new-team-select"))
+          new-rr-teams @teams
           new-judges (map :_id @judges)]
       (cond
         (empty? new-rr-room) (js/alert "Please select a room")
@@ -30,9 +30,9 @@
         :else (do
                 (dispatch [:create-round-room {:room          new-rr-room
                                                :judges        new-judges
-                                               :teams         (apply merge
-                                                                     (map-indexed (fn [i t]
-                                                                                    {t i}) new-rr-teams))
+                                               :teams         (reduce (fn [out [idx t]]
+                                                                        (assoc out t (inc idx)))
+                                                                      {} (map-indexed list @teams))
                                                :tournament-id (:active-tournament db)
                                                :round-id      (:active-round db)}])
                 (reset! judges #{}))))

@@ -68,9 +68,9 @@
           [:td [:button.btn.btn-xs.btn-flat.btn-block
                 {:class    (if disabled? "btn-danger" "btn-primary")
                  :on-click #(dispatch [:send-transit-toggle room :disabled?])}
-                (if disabled? "Not In Use" "In Use")]]])
-       [:tfooter
-        [room-table-footer @tid]]]])))
+                (if disabled? "Not In Use" "In Use")]]])]
+      [:tfoot
+       [room-table-footer @tid]]])))
 
 (defn rooms-editor-page []
   [:section.content>div.row>div.col-sm-12>div.box.box-primary

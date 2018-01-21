@@ -58,9 +58,9 @@
            [:td [:button.btn.btn-xs.btn-flat.btn-block
                  {:class    (if signed-in? "btn-primary" "btn-danger")
                   :on-click #(dispatch [:send-transit-toggle judge :signed-in? :judges])}
-                 (if signed-in? "In Use" "Not In Use")]]])
-        [:tfooter
-         [judge-table-footer registration?]]]])))
+                 (if signed-in? "In Use" "Not In Use")]]])]
+       [:tfoot
+        [judge-table-footer registration?]]])))
 
 (defn scratches-table-footer [teams judges schools]
   (fn [teams judges schools]
@@ -95,9 +95,9 @@
              [:td [:button.btn.btn-danger.btn-xs
                    {:type     "button"
                     :on-click #(dispatch [:send-scratch scratch])}
-                   "Remove scratch"]]]))
-        [:tfooter
-         [scratches-table-footer @teams @judges @schools]]]])))
+                   "Remove scratch"]]]))]
+       [:tfoot
+        [scratches-table-footer @teams @judges @schools]]])))
 
 (defn judges-editor-page
   ([registration?]

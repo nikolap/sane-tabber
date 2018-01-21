@@ -30,7 +30,8 @@
 
 (defn unused-teams [teams round-rooms & [id]]
   (filter #(or (and (not (contains? (set (map name (mapcat (comp keys :teams) round-rooms))) (:_id %)))
-                    (:signed-in? %))
+                    (:signed-in? %)
+                    (not (:dropped? %)))
                (= (:_id %) id)) teams))
 
 (basic-get-sub :active-page)

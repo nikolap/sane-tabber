@@ -206,7 +206,8 @@
   (mc/find-maps @db "round-rooms" {:round-id (object-id rid)}))
 
 (defn get-active-teams [tid]
-  (get-by-tid "teams" tid {:signed-in? true}))
+  (get-by-tid "teams" tid {:signed-in? true
+                           :dropped?   false}))
 
 (defn get-active-rooms [tid]
   (get-by-tid "rooms" tid {:disabled? false}))
@@ -225,9 +226,11 @@
   (mc/remove @db "round-rooms" {:round-id (object-id rid)}))
 
 (defn create-round-room [round-room]
+  (prn round-room)
   (insert-return @db "round-rooms" (object-idify round-room [:tournament-id :round-id :room :judges])))
 
 (defn update-round-room [round-room]
+  (prn round-room)
   (let [round-room (object-idify round-room [:_id :tournament-id :round-id :room :judges])]
     (mc/update-by-id @db "round-rooms" (:_id round-room) {$set round-room})))
 

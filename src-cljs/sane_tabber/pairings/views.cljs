@@ -16,21 +16,22 @@
       (dispatch [:set-tooltip-data nil]))))
 
 (defn teams-select [new? teams & [params]]
-  (let [stats (subscribe [:stats])
-        schools (subscribe [:schools])
+  (let [stats       (subscribe [:stats])
+        schools     (subscribe [:schools])
         show-stats? (subscribe [:show-stats?])]
     (fn [new? teams & [params]]
       [:select
        (merge {:class (str (if new? "new-team-select" "team-select") " form-control input-sm")} params)
        [:option nil]
-       (for [{:keys [_id] :as team} teams
-             :let [stats (get-by-id @stats _id :id)]]
-         ^{:key _id}
-         [:option {:value _id}
-          (str (format-team-name team @schools)
-               " (" (:points stats) ")"
-               (when @show-stats?
-                 (str " / (" (clojure.string/join ", " (sort-by first (:position-data stats))) ")")))])])))
+       (doall
+         (for [{:keys [_id] :as team} teams
+               :let [stats (get-by-id @stats _id :id)]]
+           ^{:key (str "select-" _id)}
+           [:option {:value _id}
+            (str (format-team-name team @schools)
+                 " (" (:points stats) ")"
+                 (when @show-stats?
+                   (str " / (" (clojure.string/join ", " (sort-by first (:position-data stats))) ")")))]))])))
 
 (defn judge-label [{:keys [_id name] :as judge} & [removal-coll rr-id params]]
   [:span.tag.label.label-primary
@@ -38,8 +39,8 @@
    [:span name]
    [:a>i.remove.glyphicon.glyphicon-remove-sign.glyphicon-white
     {:on-click #(if removal-coll
-                 (swap! removal-coll disj judge)
-                 (dispatch [:remove-rr-judge rr-id _id]))}]])
+                  (swap! removal-coll disj judge)
+                  (dispatch [:remove-rr-judge rr-id _id]))}]])
 
 (defn pairings-head [{:keys [team-count settings]}]
   [:thead>tr
@@ -51,118 +52,125 @@
    [:th "Judges"]])
 
 (defn pairings-footer [tournament]
-  (let [unused-rooms (subscribe [:unused-rooms])
-        unused-judges (subscribe [:unused-judges])
-        unused-teams (subscribe [:unused-teams])]
+  (let [unused-rooms     (subscribe [:unused-rooms])
+        unused-judges    (subscribe [:unused-judges])
+        unused-teams     (subscribe [:unused-teams])
+        new-teams        (reagent/atom [])
+        new-round-judges (reagent/atom #{})]
     (fn [tournament]
-      (let [new-round-judges (reagent/atom #{})]
-        [:tr
-         [:td [select-custom-form-element "new-rr-room" nil (conj @unused-rooms nil) :name :_id]]
+      [:tr
+       [:td [select-custom-form-element "new-rr-room" nil (conj @unused-rooms nil) :name :_id]]
 
+       (doall
          (for [i (range (:team-count tournament))]
            ^{:key i}
-           [:td [teams-select true (sort-by (juxt :school-id :team-code) @unused-teams)]])
+           [:td [teams-select true (sort-by (juxt :school-id :team-code) @unused-teams)
+                 {:on-change #(swap! new-teams assoc i (.-value (.-target %)))}]]))
 
-         [:td
+       [:td
+        (doall
           (for [{:keys [_id] :as judge} @new-round-judges]
             ^{:key _id}
-            [judge-label judge new-round-judges])
-          [:button.btn.btn-success.btn-xs
-           {:type     "button"
-            :on-click #(dispatch [:set-tooltip-data {:left      (.-pageX %)
-                                                     :top       (.-pageY %)
-                                                     :items     @unused-judges
-                                                     :new-items new-round-judges
-                                                     :header    "Judge"}])}
-           [:i.fa.fa-plus]]
+            [judge-label judge new-round-judges]))
+        [:button.btn.btn-success.btn-xs
+         {:type     "button"
+          :on-click #(dispatch [:set-tooltip-data {:left      (.-pageX %)
+                                                   :top       (.-pageY %)
+                                                   :items     @unused-judges
+                                                   :new-items new-round-judges
+                                                   :header    "Judge"}])}
+         [:i.fa.fa-plus]]
 
-          [:button.btn.btn-primary.btn-xs.btn-flat.pull-right
-           {:type     "button"
-            :on-click #(dispatch [:submit-new-team-pairings new-round-judges])}
-           "Add Room"
-           [:i.fa.fa-plus]]]]))))
+        [:button.btn.btn-primary.btn-xs.btn-flat.pull-right
+         {:type     "button"
+          :on-click #(dispatch [:submit-new-team-pairings new-round-judges new-teams])}
+         "Add Room"
+         [:i.fa.fa-plus]]]])))
 
 (defn pairings-table []
-  (let [tournament (subscribe [:tournament])
-        round-rooms (subscribe [:round-rooms])
+  (let [tournament    (subscribe [:tournament])
+        round-rooms   (subscribe [:round-rooms])
         unused-judges (subscribe [:unused-judges])
-        rooms (subscribe [:rooms])
-        all-judges (subscribe [:judges])]
+        rooms         (subscribe [:rooms])
+        all-judges    (subscribe [:judges])]
     (fn []
       [:table.table.table-striped.table-condensed.table-hover
        [pairings-head @tournament]
        [:tbody
-        (for [{:keys [_id room judges teams] :as rr} @round-rooms
-              :let [room (get-by-id @rooms room :_id)
-                    rr-judges (map #(get-by-id @all-judges % :_id) judges)
-                    unused-rooms (subscribe [:unused-rooms (:_id room)])]]
-          ^{:key _id}
-          [:tr
-           [:td [select-custom-form-element nil nil @unused-rooms :name :_id
-                 {:on-change #(dispatch [:ws-update rr (event-value %) :room :round-rooms])
-                  :value     (:_id room)}]]
+        (doall
+          (for [{:keys [_id room judges teams] :as rr} @round-rooms
+                :let [room         (get-by-id @rooms room :_id)
+                      rr-judges    (map #(get-by-id @all-judges % :_id) judges)
+                      unused-rooms (subscribe [:unused-rooms (:_id room)])]]
+            ^{:key _id}
+            [:tr
+             [:td [select-custom-form-element nil nil @unused-rooms :name :_id
+                   {:on-change #(dispatch [:ws-update rr (event-value %) :room :round-rooms])
+                    :value     (:_id room)}]]
 
-           (for [i (range (:team-count @tournament))
-                 :let [team-id (->> teams
-                                    (filter #(= (second %) (inc i)))
-                                    first
-                                    first
-                                    (#(if (nil? %1) %1 (name %1))))
-                       unused-teams (subscribe [:unused-teams team-id])]]
-             ^{:key i}
-             [:td
-              [teams-select false (sort-by (juxt :school-id :team-code) @unused-teams)
-               {:on-change (fn [e]
-                             (dispatch [:ws-update rr
-                                        (assoc
-                                          (into {}
-                                                (filter #(not= (inc i) (second %)) (:teams rr)))
-                                          (event-value e) (inc i)) :teams :round-rooms]))
-                :value     team-id}]])
+             (for [i (range (:team-count @tournament))
+                   :let [team-id      (->> teams
+                                           (filter #(= (second %) (inc i)))
+                                           first
+                                           first
+                                           (#(if (nil? %1) %1 (name %1))))
+                         unused-teams (subscribe [:unused-teams team-id])]]
+               ^{:key i}
+               [:td
+                [teams-select false (sort-by (juxt :school-id :team-code) @unused-teams)
+                 {:on-change (fn [e]
+                               (dispatch [:ws-update rr
+                                          (assoc
+                                            (into {}
+                                                  (filter #(not= (inc i) (second %)) (:teams rr)))
+                                            (event-value e) (inc i)) :teams :round-rooms]))
+                  :value     team-id}]])
 
-           (let [rr-id _id]
-             [:td (for [{:keys [_id] :as judge} rr-judges]
-                    ^{:key _id}
-                    [judge-label judge nil rr-id])
-              [:button.btn.btn-success.btn-xs
-               {:type     "button"
-                :on-click #(dispatch [:set-tooltip-data {:left        (.-pageX %)
-                                                         :top         (.-pageY %)
-                                                         :items       @unused-judges
-                                                         :parent-item _id
-                                                         :header      "Judge"}])}
-               [:i.fa.fa-plus]]])])
+             (let [rr-id _id]
+               [:td (for [{:keys [_id] :as judge} rr-judges]
+                      ^{:key _id}
+                      [judge-label judge nil rr-id])
+                [:button.btn.btn-success.btn-xs
+                 {:type     "button"
+                  :on-click #(dispatch [:set-tooltip-data {:left        (.-pageX %)
+                                                           :top         (.-pageY %)
+                                                           :items       @unused-judges
+                                                           :parent-item _id
+                                                           :header      "Judge"}])}
+                 [:i.fa.fa-plus]]])]))
         [pairings-footer @tournament]]])))
 
 (defn unused-pane []
-  (let [unused-teams (subscribe [:unused-teams])
+  (let [unused-teams  (subscribe [:unused-teams])
         unused-judges (subscribe [:unused-judges])
-        schools (subscribe [:schools])
-        stats (subscribe [:stats])]
+        schools       (subscribe [:schools])
+        stats         (subscribe [:stats])]
     (fn []
       [:div.box-body
        [:div
         [:h4 "Teams"]
         [:ul
-         (for [{:keys [_id] :as team} @unused-teams
-               :let [stats (get-by-id @stats _id :id)]]
-           ^{:key _id}
-           [:li (str (format-team-name team @schools) " (" (:points stats) ")")])]]
+         (doall
+           (for [{:keys [_id] :as team} @unused-teams
+                 :let [stats (get-by-id @stats _id :id)]]
+             ^{:key _id}
+             [:li (str (format-team-name team @schools) " (" (:points stats) ")")]))]]
        [:div
         [:h4 "Judges"]
         [:ul
-         (for [{:keys [_id name]} @unused-judges]
-           ^{:key _id}
-           [:li name])]]])))
+         (doall
+           (for [{:keys [_id name]} @unused-judges]
+             ^{:key _id}
+             [:li name]))]]])))
 
 (defn pairings-page []
   (let [tooltip-data (subscribe [:tooltip-data])
-        tid (subscribe [:active-tournament])
-        rid (subscribe [:active-round])
-        tournament (subscribe [:tournament])
-        rooms (subscribe [:rooms])
-        teams (subscribe [:teams])
-        judges (subscribe [:judges])]
+        tid          (subscribe [:active-tournament])
+        rid          (subscribe [:active-round])
+        tournament   (subscribe [:tournament])
+        rooms        (subscribe [:rooms])
+        teams        (subscribe [:teams])
+        judges       (subscribe [:judges])]
     (fn []
       [:section.content>div.row
        [:div.col-sm-8
@@ -175,9 +183,9 @@
           "Export"]
          ;; maybe todo... or think of a better way to do it
          #_[:button.btn.btn-info.btn-flat
-          {:type     "button"
-           :on-click #(dispatch [:toggle-show-stats])}
-          "Toggle Stats"]
+            {:type     "button"
+             :on-click #(dispatch [:toggle-show-stats])}
+            "Toggle Stats"]
          [:div.box-body.no-padding
           (if (and @tournament @rooms @teams @judges)
             [pairings-table]

@@ -44,23 +44,28 @@
                                                :total-points (team-points round-data tid)
                                                :total-speaks (team-speaks round-data tid))
                                         (merge (round-data-extractor rounds round-data tid team-points)))))
-                                teams)))]
+                                (filter (comp not :dropped?) teams))))]
     (write-csv map-seq header-keys)))
+
+(def removed-name "__DQ__")
 
 (defn speakers-tab [speakers teams schools round-data rounds]
   (let [header-keys (generate-speaker-header rounds)
         map-seq (reverse
                   (sort-by (juxt :total-speaks)
-                           (map (fn [{:keys [_id team-id name] :as speaker}]
-                                  (let [team (get-by-id teams team-id :_id)
-                                        speaker-id (oid->key _id)]
-                                    (-> speaker
-                                        (assoc :speaker name
-                                               :team-name (str (:name (get-by-id schools (:school-id team) :_id)) " " (:team-code team))
-                                               :total-speaks (speaker-score round-data speaker-id)
-                                               :average (double (/ (speaker-score round-data speaker-id) (count rounds))))
-                                        (merge (round-data-extractor rounds round-data speaker-id speaker-score)))))
-                                speakers)))]
+                           (remove
+                             (fn [{:keys [speaker]}]
+                               (= removed-name speaker))
+                             (map (fn [{:keys [_id team-id name] :as speaker}]
+                                   (let [team       (get-by-id teams team-id :_id)
+                                         speaker-id (oid->key _id)]
+                                     (-> speaker
+                                         (assoc :speaker (if (:dropped? team) removed-name name)
+                                                :team-name (str (:name (get-by-id schools (:school-id team) :_id)) " " (:team-code team))
+                                                :total-speaks (speaker-score round-data speaker-id)
+                                                :average (double (/ (speaker-score round-data speaker-id) (count rounds))))
+                                         (merge (round-data-extractor rounds round-data speaker-id speaker-score)))))
+                                 speakers))))]
     (write-csv map-seq header-keys)))
 
 (defn team-position-stats [teams schools round-data tournament]
@@ -73,7 +78,7 @@
                            {:team-name (str (:name (get-by-id schools (:school-id team) :_id)) " " (:team-code team))}
                            (map (fn [i]
                                   {(keyword (str "team-" i)) (get pos-counts i)})
-                                (range 1 (inc team-count)))))) teams)]
+                                (range 1 (inc team-count)))))) (filter (comp not :dropped?) teams))]
     (write-csv map-seq header-keys)))
 
 (defn round-pairings [rooms all-teams schools all-judges round-data tournament speakers]

@@ -43,7 +43,7 @@
              {:type     "button"
               :on-click #(dispatch [:delete-round round])}
              "Delete Round"]]])]
-       [:tfooter>tr
+       [:tfoot>tr
         [:td
          {:col-span "3"}
          [:button.btn.btn-success.btn-flat.btn-block

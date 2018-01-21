@@ -60,7 +60,8 @@
                                 :school-id     (school-id-by-code schools (second %))
                                 :tournament-id tournament-id
                                 :signed-in?    false
-                                :accessible?   false}) raw-data)]
+                                :accessible?   false
+                                :dropped?      false}) raw-data)]
     (db/batch-create-teams teams-data)
     (let [teams (db/get-teams tournament-id)
           speaker-data (mapcat
@@ -244,7 +245,8 @@
 (defn team-report [tid]
   (log/info "Generating team report for tournament" tid)
   (let [tournament (db/get-tournament tid)
-        teams (filter :signed-in? (db/get-teams tid))
+        teams (filter #(and (:signed-in? %)
+                            (not (:dropped? %))) (db/get-teams tid))
         schools (db/get-schools tid)
         speakers (db/get-speakers tid)]
     (as-csv

@@ -15,7 +15,7 @@
       (dispatch [:set-tooltip-data nil]))))
 
 (defn teams-footer [schools]
-  [:tfooter>tr
+  [:tfoot>tr
    [:td [select-custom-form-element "new-team-school-id" nil schools :name :_id]]
    [:td [input-form-element "new-team-code" "text" nil false {:class "input-sm form-control"}]]
    [:td nil]
@@ -40,10 +40,11 @@
         [:th "Code"]
         [:th "Speakers"]
         [:th "Accessible?"]
-        [:th "Signed in?"]]
+        [:th "Signed in?"]
+        [:th "Dropped?"]]
        [:tbody
         (doall
-          (for [{:keys [_id school-id accessible? signed-in?] :as team} (sort-by (juxt :school-id :team-code) @teams)
+          (for [{:keys [_id school-id accessible? signed-in? dropped?] :as team} (sort-by (juxt :school-id :team-code) @teams)
                 :let [team-speakers (get-multi @speakers _id :team-id)
                       max-speaks (:speak-count @tournament)]]
             ^{:key _id}
@@ -73,8 +74,12 @@
              [:td [:button.btn.btn-xs.btn-flat.btn-block
                    {:class    (if signed-in? "btn-primary" "btn-danger")
                     :on-click #(dispatch [:send-transit-toggle team :signed-in? :teams])}
-                   (if signed-in? "In Use" "Not In Use")]]]))
-        [teams-footer @schools]]])))
+                   (if signed-in? "In Use" "Not In Use")]]
+             [:td [:button.btn.btn-xs.btn-flat.btn-block
+                   {:class    (if dropped? "btn-danger" "btn-default" )
+                    :on-click #(dispatch [:send-transit-toggle team :dropped? :teams])}
+                   (if dropped? "DROPPED" "Active")]]]))]
+       [teams-footer @schools]])))
 
 (defn speakers-table []
   (let [speakers (subscribe [:speakers])]
@@ -92,16 +97,16 @@
            [:td
             (if (clojure.string/blank? team-id)
               [:span.badge.bg-red "No"]
-              [:span.badge.bg-green "Yes"])]])
-        [:tfooter>tr
-         [:td [input-form-element "new-speaker-name" "text" nil true
-               {:placeholder "Enter new speaker name and press enter"
-                :on-key-down #(when (= (.-keyCode %) 13)
+              [:span.badge.bg-green "Yes"])]])]
+       [:tfoot>tr
+        [:td [input-form-element "new-speaker-name" "text" nil true
+              {:placeholder "Enter new speaker name and press enter"
+               :on-key-down #(when (= (.-keyCode %) 13)
                                (dispatch [:submit-new-speaker]))}]]
-         [:td>button.btn.btn-success.btn-block
-          {:type     "button"
-           :on-click #(dispatch [:submit-new-speaker])}
-          "Add Speaker (or press enter)"]]]])))
+        [:td>button.btn.btn-success.btn-block
+         {:type     "button"
+          :on-click #(dispatch [:submit-new-speaker])}
+         "Add Speaker (or press enter)"]]])))
 
 (defn teams-editor-page
   ([registration?]

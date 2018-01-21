@@ -5,7 +5,8 @@
             [sane-tabber.generic.data :refer [add-item remove-item]]))
 
 (defn round-pairable? [{:keys [teams tournament]}]
-  (zero? (mod (count (filter :signed-in? teams)) (:team-count tournament))))
+  (zero? (mod (count (filter #(and (:signed-in? %)
+                                   (not (:dropped? %))) teams)) (:team-count tournament))))
 
 (register-handler
   :add-round
