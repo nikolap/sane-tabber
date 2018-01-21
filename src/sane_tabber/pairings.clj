@@ -68,8 +68,8 @@
 
 (defn judge-looper [judges scratches prev-round-data round-rooms]
   (loop [round-rooms round-rooms
-         judge (first judges)
-         judges (rest judges)]
+         judge       (first judges)
+         judges      (rest judges)]
     (if judge
       (let [rr (assign-judge-round-room round-rooms scratches judge prev-round-data)]
         (recur (update-rr round-rooms rr (update rr :judges conj judge)) (first judges) (rest judges)))
@@ -78,10 +78,10 @@
 (defn apply-pull-ups [grouped-teams]
   (if (every? even? (map (comp count second) grouped-teams))
     grouped-teams
-    (loop [test-group (first grouped-teams)
-           next-group (second grouped-teams)
+    (loop [test-group  (first grouped-teams)
+           next-group  (second grouped-teams)
            rest-groups (rest grouped-teams)
-           out []]
+           out         []]
       (if (not-empty (second next-group))
         (if (-> test-group second count even?)
           (recur next-group
@@ -120,8 +120,8 @@
 
 (defn determine-roles [team-role-data]
   (let [max-role (count team-role-data)]
-    (loop [out {}
-           teams team-role-data
+    (loop [out          {}
+           teams        team-role-data
            current-role 1]
       (if (<= current-role max-role)
         (let [team-for-role (first (sort-by (comp first vals)
@@ -204,7 +204,7 @@
 
 (defn team-looper [team-groups rooms scratches prev-round-data round-rooms]
   (loop [round-rooms round-rooms
-         team-group (first team-groups)
+         team-group  (first team-groups)
          team-groups (rest team-groups)]
     (if team-group
       (let [rr (assign-teams-round-room round-rooms rooms scratches team-group prev-round-data)]

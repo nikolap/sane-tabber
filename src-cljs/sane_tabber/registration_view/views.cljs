@@ -4,18 +4,18 @@
             [sane-tabber.generic.utils :refer [format-team-name]]))
 
 (defn team-table []
-  (let [teams (subscribe [:teams])
+  (let [teams    (subscribe [:teams])
         speakers (subscribe [:speakers])
-        schools (subscribe [:schools])]
+        schools  (subscribe [:schools])]
     (fn []
       [:div
-       {:style {:position "fixed"
-                :left "0px"
-                :top "0px"
-                :z-index 99999
-                :height "100%"
+       {:style {:position         "fixed"
+                :left             "0px"
+                :top              "0px"
+                :z-index          99999
+                :height           "100%"
                 :background-color "#FFF"
-                :overflow-y "scroll"}}
+                :overflow-y       "scroll"}}
        [:h3 "If you see yourselves on this list as not signed in, please visit the registration desk as soon as possible."]
 
        [:table.table.table-striped.table-condensed.table-hover.table-fixed

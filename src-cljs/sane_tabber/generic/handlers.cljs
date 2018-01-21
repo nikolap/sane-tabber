@@ -46,7 +46,7 @@
 (register-handler
   :init-db
   (fn [_ _]
-    {:x-csrf-token        (id-value :#__anti-forgery-token)}))
+    {:x-csrf-token (id-value :#__anti-forgery-token)}))
 
 (register-handler
   :error-resp

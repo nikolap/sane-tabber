@@ -11,6 +11,6 @@
 (register-sub
   :unused-users
   (fn [_ _]
-    (let [users (subscribe [:users])
+    (let [users      (subscribe [:users])
           tournament (subscribe [:tournament])]
       (reaction (filter-unused-users @users @tournament)))))

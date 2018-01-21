@@ -6,7 +6,7 @@
             [sane-tabber.ballots.handlers :refer [get-team-score]]))
 
 (defn round-selection []
-  (let [rounds (subscribe [:rounds])
+  (let [rounds       (subscribe [:rounds])
         active-round (subscribe [:active-round])]
     (fn []
       [:div.form-group.col-sm-4.col-sm-offset-8
@@ -20,12 +20,12 @@
           [:option {:value _id} round-number])]])))
 
 (defn ballots-table []
-  (let [tournament (subscribe [:tournament])
+  (let [tournament  (subscribe [:tournament])
         round-rooms (subscribe [:round-rooms])
-        schools (subscribe [:schools])
-        rooms (subscribe [:rooms])
-        all-teams (subscribe [:teams])
-        all-judges (subscribe [:judges])]
+        schools     (subscribe [:schools])
+        rooms       (subscribe [:rooms])
+        all-teams   (subscribe [:teams])
+        all-judges  (subscribe [:judges])]
     (fn []
       [:table.table.table-striped.table-bordered.table-condensed.table-hover.table-padded.table-centered
        [:thead>tr
@@ -41,8 +41,8 @@
        [:tbody
         (doall
           (for [{:keys [_id room judges teams ballot] :as rr} @round-rooms
-                :let [room (get-by-id @rooms room :_id)
-                      rr-teams (map #(get-by-id @all-teams (name (first %)) :_id) (sort-by val teams))
+                :let [room      (get-by-id @rooms room :_id)
+                      rr-teams  (map #(get-by-id @all-teams (name (first %)) :_id) (sort-by val teams))
                       rr-judges (clojure.string/join " || " (map #(:name (get-by-id @all-judges % :_id)) judges))]]
             ^{:key _id}
             [:tr
@@ -66,15 +66,15 @@
                  "Add Ballot"])]]))]])))
 
 (defn ballot-modal []
-  (let [active-scores (subscribe [:active-scores])
+  (let [active-scores     (subscribe [:active-scores])
         active-round-room (subscribe [:active-round-room])
-        tournament (subscribe [:tournament])
-        schools (subscribe [:schools])
-        rooms (subscribe [:rooms])
-        round-rooms (subscribe [:round-rooms])
-        teams (subscribe [:teams])
-        judges (subscribe [:judges])
-        speakers (subscribe [:speakers])]
+        tournament        (subscribe [:tournament])
+        schools           (subscribe [:schools])
+        rooms             (subscribe [:rooms])
+        round-rooms       (subscribe [:round-rooms])
+        teams             (subscribe [:teams])
+        judges            (subscribe [:judges])
+        speakers          (subscribe [:speakers])]
     (fn []
       [:div#ballot-modal.modal.fade>div.modal-dialog>div.modal-content
        [:div
@@ -82,12 +82,12 @@
          [:button.close {:aria-label "Close" :data-dismiss "modal" :type "button"}]
          [:h4.modal-title "Add Ballot"]]
         (let [round-room (get-by-id @round-rooms @active-round-room :_id)
-              room (get-by-id @rooms (:room round-room) :_id)
-              rr-teams (map #(get-by-id @teams (name (first %)) :_id) (sort-by val (:teams round-room)))
-              rr-judges (clojure.string/join " || " (map #(:name (get-by-id @judges % :_id)) (:judges round-room)))]
+              room       (get-by-id @rooms (:room round-room) :_id)
+              rr-teams   (map #(get-by-id @teams (name (first %)) :_id) (sort-by val (:teams round-room)))
+              rr-judges  (clojure.string/join " || " (map #(:name (get-by-id @judges % :_id)) (:judges round-room)))]
           [:form#new-board-form
            {:on-key-down #(when (= (.-keyCode %) 13)
-                           (dispatch [:submit-ballot @active-scores @tournament round-room rr-teams]))}
+                            (dispatch [:submit-ballot @active-scores @tournament round-room rr-teams]))}
            [:div.modal-body
             [:p [:strong "Room: "] (:name room)]
             [:p [:strong "Judges: "] rr-judges]
@@ -95,7 +95,7 @@
             (doall
               (for [{:keys [_id] :as team} rr-teams
                     :let [speakers (get-multi @speakers _id :team-id)
-                          team-id _id]]
+                          team-id  _id]]
                 ^{:key _id}
                 [:div
                  [:p>strong (format-team-name team @schools)]

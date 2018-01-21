@@ -67,20 +67,20 @@
 (register-sub
   :unused-rooms
   (fn [_ [_ id]]
-    (let [rooms (subscribe [:rooms])
+    (let [rooms       (subscribe [:rooms])
           round-rooms (subscribe [:round-rooms])]
       (reaction (unused-rooms @rooms @round-rooms id)))))
 
 (register-sub
   :unused-judges
   (fn [_ [_ id]]
-    (let [judges (subscribe [:judges])
+    (let [judges      (subscribe [:judges])
           round-rooms (subscribe [:round-rooms])]
       (reaction (unused-judges @judges @round-rooms id)))))
 
 (register-sub
   :unused-teams
   (fn [_ [_ id]]
-    (let [teams (subscribe [:teams])
+    (let [teams       (subscribe [:teams])
           round-rooms (subscribe [:round-rooms])]
       (reaction (unused-teams @teams @round-rooms id)))))

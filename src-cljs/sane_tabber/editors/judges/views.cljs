@@ -14,7 +14,7 @@
       {:type        "text"
        :placeholder "enter a judge name and press enter"
        :on-key-down #(when (= (.-keyCode %) 13)
-                      (dispatch [:submit-judge]))}]]]
+                       (dispatch [:submit-judge]))}]]]
    [:td
     {:class (when registration? "hidden")}
     [:select#new-rating.form-control.input-sm
@@ -76,9 +76,9 @@
 
 (defn scratches-table []
   (let [scratches (subscribe [:scratches])
-        teams (subscribe [:teams])
-        judges (subscribe [:judges])
-        schools (subscribe [:schools])]
+        teams     (subscribe [:teams])
+        judges    (subscribe [:judges])
+        schools   (subscribe [:schools])]
     (fn []
       [:table.table.table-striped.table-condensed.table-hover
        [:thead>tr

@@ -50,8 +50,8 @@
       :else (dispatch [:send-ballot round-room
                        {:teams    (apply merge
                                          (map #(let [team-id (:_id %)]
-                                                {team-id {:points (get-team-points active-scores team-id)
-                                                          :score  (get-team-score active-scores team-id)}})
+                                                 {team-id {:points (get-team-points active-scores team-id)
+                                                           :score  (get-team-score active-scores team-id)}})
                                               rr-teams))
                         :speakers (apply merge (vals active-scores))}]))
     db))

@@ -19,9 +19,9 @@
 (register-handler
   :submit-new-team-pairings
   (fn [db [_ judges teams]]
-    (let [new-rr-room (id-value :#new-rr-room)
+    (let [new-rr-room  (id-value :#new-rr-room)
           new-rr-teams @teams
-          new-judges (map :_id @judges)]
+          new-judges   (map :_id @judges)]
       (cond
         (empty? new-rr-room) (js/alert "Please select a room")
         (some empty? new-rr-teams) (js/alert "Please select teams")

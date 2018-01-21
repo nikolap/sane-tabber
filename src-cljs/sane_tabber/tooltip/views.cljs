@@ -18,7 +18,7 @@
            :on-click #(dispatch [:set-tooltip-data nil])}
           [:i.fa.fa-times]]
          [:select#tooltip-select.form-control.input-sm
-          {:value @select-val
+          {:value     @select-val
            :on-change #(reset! select-val (event-value %))}
           [:option nil]
           (for [{:keys [_id name]} items]

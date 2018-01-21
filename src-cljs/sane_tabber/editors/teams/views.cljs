@@ -28,10 +28,10 @@
           [:i.fa.fa-plus] " Add Team"]]]])
 
 (defn teams-table []
-  (let [tournament (subscribe [:tournament])
-        teams (subscribe [:teams])
-        speakers (subscribe [:speakers])
-        schools (subscribe [:schools])
+  (let [tournament      (subscribe [:tournament])
+        teams           (subscribe [:teams])
+        speakers        (subscribe [:speakers])
+        schools         (subscribe [:schools])
         unused-speakers (subscribe [:unused-speakers])]
     (fn []
       [:table.table.table-striped.table-condensed.table-hover.table-fixed
@@ -46,7 +46,7 @@
         (doall
           (for [{:keys [_id school-id accessible? signed-in? dropped?] :as team} (sort-by (juxt :school-id :team-code) @teams)
                 :let [team-speakers (get-multi @speakers _id :team-id)
-                      max-speaks (:speak-count @tournament)]]
+                      max-speaks    (:speak-count @tournament)]]
             ^{:key _id}
             [:tr
              [:td
@@ -76,7 +76,7 @@
                     :on-click #(dispatch [:send-transit-toggle team :signed-in? :teams])}
                    (if signed-in? "In Use" "Not In Use")]]
              [:td [:button.btn.btn-xs.btn-flat.btn-block
-                   {:class    (if dropped? "btn-danger" "btn-default" )
+                   {:class    (if dropped? "btn-danger" "btn-default")
                     :on-click #(dispatch [:send-transit-toggle team :dropped? :teams])}
                    (if dropped? "DROPPED" "Active")]]]))]
        [teams-footer @schools]])))

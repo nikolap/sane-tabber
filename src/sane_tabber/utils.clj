@@ -19,7 +19,7 @@
       transit/read))
 
 (defn write-transit-str [data]
-  (let [out (ByteArrayOutputStream. 4096)
+  (let [out    (ByteArrayOutputStream. 4096)
         writer (transit/writer out :json)]
     (transit/write writer data)
     (.toString out)))

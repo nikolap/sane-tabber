@@ -13,10 +13,10 @@
 
 (defn input-form-element [id form-type label fc? & [params error]]
   [form-element id label
-   [:input (merge {:id   id
-                   :name id
+   [:input (merge {:id    id
+                   :name  id
                    :class (when fc? "form-control")
-                   :type form-type} params)]
+                   :type  form-type} params)]
    error])
 
 (defn select-form-element [id label option-list & [params]]
@@ -49,7 +49,7 @@
          :value       @v
          :on-change   #(reset! v (event-value %))
          :on-key-down #(when (= (.-keyCode %) 13)
-                        (update-fn item @v))}]
+                         (update-fn item @v))}]
        [:button.btn.btn-success.btn-xs.pull-right
         {:type     "button"
          :on-click #(update-fn item @v)}
@@ -61,5 +61,5 @@
    [:span name]
    [:a>i.remove.glyphicon.glyphicon-remove-sign.glyphicon-white
     {:on-click #(if removal-coll
-                 (swap! removal-coll disj item)
-                 (update-fn))}]])
+                  (swap! removal-coll disj item)
+                  (update-fn))}]])

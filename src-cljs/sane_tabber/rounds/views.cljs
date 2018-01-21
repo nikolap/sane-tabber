@@ -3,7 +3,7 @@
             [sane-tabber.utils :refer [dispatch!]]))
 
 (defn rounds-table []
-  (let [tid (subscribe [:active-tournament])
+  (let [tid    (subscribe [:active-tournament])
         rounds (subscribe [:rounds])]
     (fn []
       [:table.table.table-striped.table-condensed.table-hover
@@ -27,14 +27,14 @@
               :on-click #(dispatch [:auto-pair-click _id status :auto-pair-round])}
              "Auto Pair"]
             #_[:button.btn.btn-info.btn-xs.btn-flat
-             {:type     "button"
-              :on-click #(dispatch [:auto-pair-click _id status :auto-pair-judges])}
-             "Auto Pair (JUDGES FIRST)"]
+               {:type     "button"
+                :on-click #(dispatch [:auto-pair-click _id status :auto-pair-judges])}
+               "Auto Pair (JUDGES FIRST)"]
             #_[:button.btn.btn-info.btn-xs.btn-flat
-             {:type     "button"
-              :disabled (not= "partial" status)
-              :on-click #(dispatch [:auto-pair-click _id status :auto-pair-teams])}
-             "Auto Pair (ADD TEAMS)"]
+               {:type     "button"
+                :disabled (not= "partial" status)
+                :on-click #(dispatch [:auto-pair-click _id status :auto-pair-teams])}
+               "Auto Pair (ADD TEAMS)"]
             [:button.btn.btn-primary.btn-xs.btn-flat
              {:type     "button"
               :on-click #(dispatch! (str "#/" @tid "/pairings/" _id))}
