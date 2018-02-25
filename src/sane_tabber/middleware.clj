@@ -98,6 +98,6 @@
             (assoc-in [:security :anti-forgery] false)
             (dissoc :session)))
       wrap-context
-      wrap-ssl
+      ;wrap-ssl
       wrap-internal-error
       wrap-multipart-params))
