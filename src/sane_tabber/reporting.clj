@@ -52,7 +52,7 @@
 (defn speakers-tab [speakers teams schools round-data rounds]
   (let [header-keys (generate-speaker-header rounds)
         map-seq     (reverse
-                      (sort-by (juxt :total-speaks)
+                      (sort-by :total-speaks
                                (remove
                                  (fn [{:keys [speaker]}]
                                    (= removed-name speaker))
