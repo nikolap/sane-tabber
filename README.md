@@ -1,3 +1,3 @@
 # sane-tabber -- MOVED TO GITLAB
 
-Moved to [Gitlab](https://gitlab.com/nikperic/sane-tabber)
+See version 2, moved to [Gitlab](https://gitlab.com/nikperic/sane-tabber2/-/tree/master)
